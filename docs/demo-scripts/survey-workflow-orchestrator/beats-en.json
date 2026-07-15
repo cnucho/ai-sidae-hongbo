@@ -1,0 +1,68 @@
+[
+  {
+    "id": "01-opening",
+    "screen": "title",
+    "action": "Introduce the product promise",
+    "focus": "One guided workflow",
+    "narration": "Survey delivery often breaks down between questionnaire design, review, testing, approval, and fieldwork. Survey Workflow Orchestrator keeps that entire journey visible in one guided workspace.",
+    "subtitle": "One guided survey workflow",
+    "density": "low",
+    "minHoldMs": 5500,
+    "postPauseMs": 700
+  },
+  {
+    "id": "02-home",
+    "screen": "home",
+    "action": "Click New survey",
+    "focus": "the primary next action",
+    "narration": "The workspace opens in English and immediately presents the next useful action. We can continue recent work, review existing projects, or start a new survey.",
+    "subtitle": "Start from one clear next action",
+    "density": "medium",
+    "minHoldMs": 6500,
+    "postPauseMs": 500
+  },
+  {
+    "id": "03-template",
+    "screen": "templates",
+    "action": "Choose Labor survey",
+    "focus": "official template cards",
+    "narration": "Instead of rebuilding structure from scratch, the team selects an official template. Here, the labor survey already carries its core employment, participation, and occupation question groups.",
+    "subtitle": "Begin with an official template",
+    "density": "medium",
+    "minHoldMs": 7200,
+    "postPauseMs": 600
+  },
+  {
+    "id": "04-project",
+    "screen": "project",
+    "action": "Review the next action and six-stage progress map",
+    "focus": "visible lifecycle and quality gates",
+    "narration": "The new project makes the workflow explicit. Questionnaire, review, technical test, final approval, trial, and main survey remain visible, while the current next action is highlighted above them.",
+    "subtitle": "Every stage stays visible",
+    "density": "high",
+    "minHoldMs": 8200,
+    "postPauseMs": 900
+  },
+  {
+    "id": "05-review-transition",
+    "screen": "project",
+    "action": "Click Open review workspace",
+    "focus": "the handoff from orchestration to review",
+    "narration": "With one action, the team moves from lifecycle management into the real questionnaire review workspace. The handoff is direct, so the next tool is part of the workflow rather than a disconnected app.",
+    "subtitle": "Open the real review workspace",
+    "density": "medium",
+    "minHoldMs": 7200,
+    "postPauseMs": 500
+  },
+  {
+    "id": "06-editor",
+    "screen": "editor",
+    "action": "Orient the viewer to authoring, logic, metadata, validation, and export",
+    "focus": "Survey Input Editor",
+    "narration": "The Survey Input Editor brings authoring, flow logic, metadata, review, question definition, reusable banks, and export into one operational surface. Status, issues, and readiness stay visible while the questionnaire is refined.",
+    "subtitle": "Author, validate, review, and export",
+    "density": "high",
+    "minHoldMs": 9000,
+    "postPauseMs": 1100
+  }
+]

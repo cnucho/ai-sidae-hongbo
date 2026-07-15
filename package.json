@@ -9,7 +9,11 @@
     "lint": "eslint .",
     "render:video": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/render-final-video.ps1",
     "render:correction-demo": "node scripts/render-correction-level-agent-demo.mjs",
-    "render:car-meta-hub-demo": "node scripts/render-car-meta-hub-review-demo.mjs"
+    "render:car-meta-hub-demo": "node scripts/render-car-meta-hub-review-demo.mjs",
+    "render:survey-workflow-demo": "node scripts/render-survey-workflow-orchestrator-demo.mjs",
+    "render:survey-workflow-tutorial": "node scripts/render-survey-workflow-orchestrator-demo.mjs --tutorial",
+    "capture:national-survey-stages": "node scripts/capture-national-survey-stages.mjs",
+    "render:national-survey-series": "node scripts/render-national-survey-stage-series.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.18.1",

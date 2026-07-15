@@ -1,0 +1,68 @@
+[
+  {
+    "id":"01-opening","screen":"title","title":"Survey Workflow Orchestrator","promise":"Menu tour first. Then a complete guided workflow.","action":"Introduce the tutorial structure","focus":"orientation before action","narration":"Welcome to Survey Workflow Orchestrator. This tutorial has two parts. First, we will map the menus and explain what each workspace is for. Then we will follow a real task from a new survey to a reviewed, export-ready questionnaire.","subtitle":"Menu tour, then a complete workflow","density":"low","minHoldMs":10000,"postPauseMs":900
+  },
+  {
+    "id":"02-main-menu","screen":"home","action":"Explain the main navigation","focus":"Home, New survey, Projects, and language","narration":"The main workspace is deliberately small. Home returns to the current priority. New survey opens the official template library. Projects lists saved work. The language controls switch the interface between English, Russian, and Kyrgyz, with English selected by default.","subtitle":"Main menu: work, create, organize, and switch language","density":"medium","minHoldMs":12000,"postPauseMs":700
+  },
+  {
+    "id":"03-project-home","screen":"project","action":"Explain project-level navigation","focus":"next action and progress map","narration":"Inside a project, the large action card tells the team what to do now and why it matters. Directly below, the progress map keeps every lifecycle stage visible. This prevents review, testing, approval, and fieldwork from becoming disconnected handoffs.","subtitle":"The project page keeps the next action visible","density":"high","minHoldMs":12000,"postPauseMs":900
+  },
+  {
+    "id":"04-editor-header","screen":"author","action":"Explain the editor header","focus":"open, save, templates, packages, and command bar","narration":"The questionnaire editor has a global tool bar. Open and Save manage the current work. Main view returns to orchestration. Template, JSON, XLSForm, and Collection Package provide reusable inputs and outputs. The command bar offers a faster route for structured actions.","subtitle":"Global tools stay available across the editor","density":"high","minHoldMs":14000,"postPauseMs":800
+  },
+  {
+    "id":"05-author-menu","screen":"author","action":"Explain Author","focus":"sheet entry and question order","narration":"Author is the high-throughput entry surface. It uses a sheet layout for question identifiers, wording, types, analysis fields, logic, and notes. Use it when you need to enter or reorganize many questions without opening each one separately.","subtitle":"Author: fast sheet-based questionnaire entry","density":"high","minHoldMs":13000,"postPauseMs":800
+  },
+  {
+    "id":"06-flow-menu","screen":"flow","action":"Explain Flow","focus":"order, conditions, branches, and routes","narration":"Flow converts the questionnaire into a visible path. It shows question order, incoming conditions, outgoing branches, and routes. The text view provides the same structure in a form that reviewers can read and hand off without interpreting a diagram.","subtitle":"Flow: inspect order, logic, branches, and routes","density":"high","minHoldMs":13000,"postPauseMs":800
+  },
+  {
+    "id":"07-metadata-menu","screen":"metadata","action":"Explain Metadata","focus":"variables and rule inventory","narration":"Metadata shows what the questionnaire will produce as data. It inventories variables, types, labels, routes, logic cards, scope rules, repeats, and validation rules. Additional tools expose the analysis specification and codebook for downstream teams.","subtitle":"Metadata: understand the dataset before collection","density":"high","minHoldMs":13000,"postPauseMs":800
+  },
+  {
+    "id":"08-review-menu","screen":"review-after","action":"Explain Review","focus":"respondent preview and validation","narration":"Review combines the questionnaire definition with a respondent-facing preview. Reviewers can inspect answer choices, relationship graphs, validation findings, and metadata together. This is where a plausible questionnaire becomes an auditable questionnaire.","subtitle":"Review: preview the respondent experience and issues","density":"high","minHoldMs":13000,"postPauseMs":900
+  },
+  {
+    "id":"09-define-menu","screen":"define","action":"Explain Define","focus":"detailed question editing","narration":"Define is the focused editor for one question. It controls identifiers, type, wording, translated labels, choices, structure presets, validation, and condition routing. Use it when a question needs careful design rather than bulk entry.","subtitle":"Define: edit one question in depth","density":"high","minHoldMs":13000,"postPauseMs":800
+  },
+  {
+    "id":"10-bank-menu","screen":"bank","action":"Explain Bank","focus":"reusable question sources","narration":"Bank is the reuse layer. It is where teams load template questions or approved library content instead of repeatedly recreating standard measures. Reuse improves consistency, but each imported question should still pass project-specific review.","subtitle":"Bank: reuse approved questions and templates","density":"medium","minHoldMs":12000,"postPauseMs":800
+  },
+  {
+    "id":"11-export-menu","screen":"export","action":"Explain Export","focus":"handoff packages","narration":"Export prepares the questionnaire for other systems and teams. The goal is not only a readable document. JSON, XLSForm, and collection packages preserve the structured questions, choices, metadata, and logic needed for implementation and audit.","subtitle":"Export: preserve structure for downstream handoff","density":"medium","minHoldMs":13000,"postPauseMs":1000
+  },
+  {
+    "id":"12-workflow-start","screen":"title","title":"Guided workflow","promise":"Now we will create and review one survey question.","action":"Transition from menus to task","focus":"step-by-step execution","narration":"Now that the workspace map is clear, let us complete a real task. We will start a labor survey, define an employment-status question, save it, inspect its data structure, preview the respondent view, and finish at export.","subtitle":"Follow one task from start to export","density":"low","minHoldMs":11000,"postPauseMs":900
+  },
+  {
+    "id":"13-start-survey","screen":"home","action":"Choose New survey","focus":"primary starting action","narration":"From Home, select New survey. The workspace keeps this action prominent, so a new project begins from an intentional template choice rather than an empty technical configuration.","subtitle":"Step 1: start a new survey","density":"medium","minHoldMs":9500,"postPauseMs":600
+  },
+  {
+    "id":"14-choose-template","screen":"templates","action":"Select Labor survey","focus":"official template contents","narration":"Choose the Labor survey template. Before starting, review the question groups shown on the card. They establish the intended domain and give the team a controlled baseline for employment, labor participation, and occupation content.","subtitle":"Step 2: choose the official Labor survey template","density":"medium","minHoldMs":11000,"postPauseMs":700
+  },
+  {
+    "id":"15-confirm-project","screen":"project","action":"Confirm the next action","focus":"review stage and lifecycle","narration":"The project is created as a draft. The next action is to submit the questionnaire for internal quality review. Before opening the editor, confirm where the project sits in the six-stage lifecycle and which quality tools are available.","subtitle":"Step 3: confirm status and the next quality gate","density":"high","minHoldMs":12000,"postPauseMs":900
+  },
+  {
+    "id":"16-open-review","screen":"project","action":"Open the review workspace","focus":"direct workspace handoff","narration":"Select Open review workspace. This direct handoff keeps the project identity and review purpose connected while opening the detailed Survey Input Editor.","subtitle":"Step 4: open the review workspace","density":"medium","minHoldMs":8500,"postPauseMs":600
+  },
+  {
+    "id":"17-define-question","screen":"define-complete","action":"Enter question wording and coded choices","focus":"employment-status question","narration":"Open Define and enter the question exactly as the respondent should see it: What is your current employment status? Then enter coded choices for employed, unemployed, and not in the labor force. The preview list updates from the structured choice codes.","subtitle":"Step 5: enter wording and coded choices","density":"high","minHoldMs":14000,"postPauseMs":900
+  },
+  {
+    "id":"18-save-check","screen":"define-complete","action":"Save and inspect status","focus":"errors reduced to zero","narration":"Save the questionnaire and check the status strip. The missing question text error has cleared, while remaining warnings identify untranslated labels. This is the correct pattern: save, read the evidence, and decide the next correction instead of assuming completion.","subtitle":"Step 6: save, then read the status evidence","density":"high","minHoldMs":13000,"postPauseMs":900
+  },
+  {
+    "id":"19-check-flow","screen":"flow-after","action":"Inspect the saved question in Flow","focus":"question order and route status","narration":"Move to Flow. The question now appears with its real wording. Because no condition or branch has been added, it is always shown and ends the current path. This makes missing logic visible instead of leaving it implicit.","subtitle":"Step 7: verify order and routing in Flow","density":"high","minHoldMs":12000,"postPauseMs":800
+  },
+  {
+    "id":"20-check-metadata","screen":"metadata-after","action":"Inspect the generated variable","focus":"variable type and label","narration":"Next, open Metadata. Confirm that Q1 is represented as a single-choice variable with the intended label. This check connects questionnaire wording to the dataset that analysts will eventually receive.","subtitle":"Step 8: verify the generated metadata","density":"high","minHoldMs":11000,"postPauseMs":800
+  },
+  {
+    "id":"21-preview","screen":"review-after","action":"Preview the respondent view","focus":"question, choices, and warnings","narration":"In Review, the respondent preview shows the question and all three choices. The same screen keeps the relationship graph, validation findings, and metadata counts nearby. Review the visible experience and the machine checks together.","subtitle":"Step 9: preview the question and review warnings","density":"high","minHoldMs":13000,"postPauseMs":900
+  },
+  {
+    "id":"22-finish-export","screen":"export","action":"Finish at Export","focus":"structured handoff","narration":"Finish in Export. Choose the format required by the next system, but keep the structured package as the source of truth. The workflow is now traceable from template selection through authoring, validation, preview, metadata review, and downstream handoff.","subtitle":"Step 10: export a structured, reviewable handoff","density":"medium","minHoldMs":13000,"postPauseMs":1200
+  }
+]

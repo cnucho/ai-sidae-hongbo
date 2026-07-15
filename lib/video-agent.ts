@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { stat } from "node:fs/promises";
 import path from "node:path";
+import { VIDEO_PRODUCTION_STANDARDS, assertVerifiedVideo, type VideoProductionStandard } from "./video-production-standards";
 
 export type VideoAgentMode = "gpt" | "local";
 
@@ -36,12 +37,16 @@ export type VideoAgentVideo = {
   duration: number;
   size: number;
   generatedAt: string;
+  videoCodec: string;
+  audioCodec: string;
+  sampleFramePath: string;
 };
 
 export type VideoAgentResult = {
   plan: VideoAgentPlan;
   runSteps: VideoAgentRunStep[];
   video: VideoAgentVideo;
+  productionStandards: VideoProductionStandard[];
 };
 
 type CommandResult = {
@@ -53,6 +58,7 @@ type CommandResult = {
 
 const root = process.cwd();
 const finalVideoPath = path.join(root, "out", "pr-studio-final.mp4");
+const sampleFramePath = path.join(root, "out", "pr-studio-final-sample.png");
 
 const fallbackPlanSteps: VideoAgentPlanStep[] = [
   {
@@ -324,10 +330,8 @@ export async function runVideoAgent({
     [
       "-v",
       "error",
-      "-select_streams",
-      "v:0",
       "-show_entries",
-      "stream=width,height:format=duration,size",
+      "stream=codec_type,codec_name,width,height:format=duration,size",
       "-of",
       "json",
       finalVideoPath,
@@ -338,10 +342,30 @@ export async function runVideoAgent({
   ensureCompleted(verify);
 
   const metadata = JSON.parse(verify.output) as {
-    streams?: Array<{ width?: number; height?: number }>;
+    streams?: Array<{ codec_type?: string; codec_name?: string; width?: number; height?: number }>;
     format?: { duration?: string; size?: string };
   };
   const file = await stat(finalVideoPath);
+  const videoStream = metadata.streams?.find((stream) => stream.codec_type === "video");
+  const audioStream = metadata.streams?.find((stream) => stream.codec_type === "audio");
+  const verified = {
+    width: videoStream?.width ?? 0,
+    height: videoStream?.height ?? 0,
+    duration: Number(metadata.format?.duration ?? 0),
+    size: Number(metadata.format?.size ?? file.size),
+    videoCodec: videoStream?.codec_name ?? "",
+    audioCodec: audioStream?.codec_name ?? "",
+  };
+  assertVerifiedVideo(verified);
+
+  const sample = await runAgentStep(
+    "Accurate sample frame",
+    "ffmpeg",
+    ["-y", "-loglevel", "error", "-i", finalVideoPath, "-ss", (verified.duration / 2).toFixed(3), "-frames:v", "1", sampleFramePath],
+    env,
+  );
+  runSteps.push(sample);
+  ensureCompleted(sample);
 
   return {
     plan,
@@ -349,11 +373,10 @@ export async function runVideoAgent({
     video: {
       path: finalVideoPath,
       downloadUrl: "/api/video-agent/file",
-      width: metadata.streams?.[0]?.width ?? 0,
-      height: metadata.streams?.[0]?.height ?? 0,
-      duration: Number(metadata.format?.duration ?? 0),
-      size: Number(metadata.format?.size ?? file.size),
+      ...verified,
       generatedAt: file.mtime.toISOString(),
+      sampleFramePath,
     },
+    productionStandards: VIDEO_PRODUCTION_STANDARDS,
   };
 }

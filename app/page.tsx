@@ -103,7 +103,15 @@ type VideoAgentOutput = {
     duration: number;
     size: number;
     generatedAt: string;
+    videoCodec: string;
+    audioCodec: string;
+    sampleFramePath: string;
   };
+  productionStandards: Array<{
+    id: string;
+    label: string;
+    requirement: string;
+  }>;
 };
 
 const samplePressInput: PressInput = {
@@ -1457,6 +1465,26 @@ function AgentStudio() {
                   <Metric label="길이" value={formatVideoDuration(output.video.duration)} tone="mint" />
                   <Metric label="크기" value={formatFileSize(output.video.size)} tone="coral" />
                   <Metric label="상태" value="완료" tone="ink" />
+                </div>
+                <div className="rounded-lg border border-mint/30 bg-mint/5 p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-ink">
+                    <ShieldCheck className="h-4 w-4 text-mint" />
+                    Evidence-first production standards
+                  </div>
+                  <div className="mt-3 grid gap-2 md:grid-cols-2">
+                    {output.productionStandards.map((standard) => (
+                      <div key={standard.id} className="rounded-md border border-line bg-white p-3">
+                        <p className="text-sm font-semibold">{standard.label}</p>
+                        <p className="mt-1 text-xs font-medium leading-relaxed text-ink/58">
+                          {standard.requirement}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs font-semibold text-ink/54">
+                    Verified codecs: {output.video.videoCodec.toUpperCase()} / {output.video.audioCodec.toUpperCase()}
+                    {" · "}Accurate midpoint frame: {output.video.sampleFramePath}
+                  </p>
                 </div>
               </div>
             ) : (

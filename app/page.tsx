@@ -66,7 +66,9 @@ type TabKey =
 
 type ApiResponse<T> = {
   ok: boolean;
-  output: T;
+  output?: T;
+  queued?: boolean;
+  job?: VideoAgentJob;
   error?: string;
 };
 
@@ -104,6 +106,13 @@ type VideoAgentOutput = {
     size: number;
     generatedAt: string;
   };
+};
+
+type VideoAgentJob = {
+  id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  error?: string;
+  output?: VideoAgentOutput;
 };
 
 const samplePressInput: PressInput = {
@@ -493,6 +502,9 @@ async function postJson<T>(url: string, payload: unknown) {
   const data = (await response.json()) as ApiResponse<T>;
   if (!response.ok || !data.ok) {
     throw new Error(data.error ?? "처리에 실패했습니다.");
+  }
+  if (!data.output) {
+    throw new Error("처리 결과를 받지 못했습니다.");
   }
   return data.output;
 }
@@ -1323,13 +1335,57 @@ function AgentStudio() {
         throw new Error(data.error ?? "영상 생성에 실패했습니다.");
       }
 
-      setOutput(data.output);
+      if (data.queued && data.job) {
+        const job = await pollVideoJob(data.job.id);
+        if (job.status === "failed") {
+          throw new Error(job.error ?? "영상 생성에 실패했습니다.");
+        }
+        if (!job.output) {
+          throw new Error("완료된 영상 정보를 찾지 못했습니다.");
+        }
+        setOutput(job.output);
+      } else if (data.output) {
+        setOutput(data.output);
+      } else {
+        throw new Error("영상 생성 결과를 받지 못했습니다.");
+      }
       setPhase(agentProgress.length - 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "영상 생성에 실패했습니다.");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function pollVideoJob(jobId: string) {
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt < 15 * 60 * 1000) {
+      const response = await fetch(`/api/video-agent/${encodeURIComponent(jobId)}`, {
+        cache: "no-store",
+      });
+      const data = (await response.json()) as {
+        ok: boolean;
+        job?: VideoAgentJob;
+        error?: string;
+      };
+
+      if (!response.ok || !data.ok || !data.job) {
+        throw new Error(data.error ?? "영상 생성 작업 상태를 확인하지 못했습니다.");
+      }
+
+      if (data.job.status === "running") {
+        setPhase((current) => Math.max(current, 1));
+      }
+
+      if (data.job.status === "completed" || data.job.status === "failed") {
+        return data.job;
+      }
+
+      await new Promise((resolve) => window.setTimeout(resolve, 5000));
+    }
+
+    throw new Error("영상 생성 작업이 너무 오래 걸려 중단했습니다.");
   }
 
   const previewUrl = output

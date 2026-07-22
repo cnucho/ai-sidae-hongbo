@@ -70,7 +70,9 @@ export async function POST(request: NextRequest) {
   const { data: renderJob, error: updateError } = await db
     .from("video_render_jobs")
     .update({
-      status: verified.state,
+      // Provider completion starts our persisted validation stage; `completed`
+      // is an adapter state, not a valid durable render-job lifecycle value.
+      status: verified.state === "completed" ? "validating" : verified.state,
       output_uri: verified.outputUrl ?? null,
       provider_response: verified.raw,
       updated_at: new Date().toISOString(),

@@ -138,6 +138,7 @@ describe("validation", () => {
           width: 1920,
           height: 1080,
           duration: 10,
+          frameRate: 30,
           hasAudio: true,
           decodable: true,
         },

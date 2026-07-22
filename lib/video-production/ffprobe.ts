@@ -49,6 +49,10 @@ export function normalizeProbeEvidence(
     frameRate: number;
     narrationRequired: boolean;
     durationTolerance?: number;
+    frameRateTolerance?: number;
+    videoCodec?: string;
+    audioCodec?: string;
+    allowedContainers?: string[];
   },
 ): ProbeEvidence {
   const streams = payload.streams ?? [];
@@ -63,6 +67,11 @@ export function normalizeProbeEvidence(
     frameRate: parseRate(video?.avg_frame_rate),
     hasAudio: audios.length > 0,
     decodable: videos.length > 0,
+    containerFormat: payload.format?.format_name ?? "unknown",
+    videoCodec: video?.codec_name ?? null,
+    audioCodec: audios[0]?.codec_name ?? null,
+    videoStreamCount: videos.length,
+    audioStreamCount: audios.length,
   };
   return {
     fileSize: actual.size,

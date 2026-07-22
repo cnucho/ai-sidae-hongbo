@@ -2,6 +2,11 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { normalizeProbeEvidence } from "./ffprobe";
 import {
+  HD_LANDSCAPE_PROFILE,
+  HD_VERTICAL_PROFILE,
+  productionProfileForDimensions,
+} from "./production-profile";
+import {
   assertTransition,
   canTransition,
   isRetryable,
@@ -153,6 +158,33 @@ describe("ffprobe-validation", () => {
   it("rejects duration outside tolerance", () => {
     const evidence = normalizeProbeEvidence(
       { ...validProbe, format: { ...validProbe.format, duration: "20" } },
+      "x",
+      expected,
+    );
+    expect(evidence.validation.passed).toBe(false);
+  });
+  it("enforces the HD landscape production contract", () => {
+    expect(HD_LANDSCAPE_PROFILE).toMatchObject({ width: 1920, height: 1080, frameRate: 30 });
+    expect(productionProfileForDimensions(1920, 1080).videoCodec).toBe("h264");
+  });
+  it("represents the HD vertical production contract", () => {
+    expect(HD_VERTICAL_PROFILE).toMatchObject({ width: 1080, height: 1920, frameRate: 30 });
+  });
+  it("rejects unsupported production dimensions", () => {
+    expect(() => productionProfileForDimensions(480, 270)).toThrow(/Unsupported/);
+  });
+  it("rejects wrong production codecs", () => {
+    const evidence = normalizeProbeEvidence(
+      { ...validProbe, streams: [{ ...validProbe.streams[0], codec_name: "vp9" }, validProbe.streams[1]] },
+      "x",
+      { ...expected, videoCodec: "h264", audioCodec: "aac", allowedContainers: ["mp4", "mov"] },
+    );
+    expect(evidence.validation.passed).toBe(false);
+    expect(evidence.validation.checks.find((check) => check.name === "video-codec")?.passed).toBe(false);
+  });
+  it("rejects wrong production frame rate", () => {
+    const evidence = normalizeProbeEvidence(
+      { ...validProbe, streams: [{ ...validProbe.streams[0], avg_frame_rate: "60/1" }, validProbe.streams[1]] },
       "x",
       expected,
     );

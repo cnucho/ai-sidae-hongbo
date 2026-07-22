@@ -55,7 +55,8 @@ export async function downloadQueuedVideo(jobId: string) {
   if (!storagePath || job.status !== "completed") throw new Error("Completed video not found.");
   const { data, error } = await adminClient().storage.from(bucket).download(storagePath);
   if (error) throw error;
-  return { bytes: new Uint8Array(await data.arrayBuffer()), generatedAt: job.output!.video.generatedAt };
+  const bytes = new Uint8Array(await data.arrayBuffer());
+  return { bytes, size: bytes.byteLength, generatedAt: job.output!.video.generatedAt };
 }
 
 export async function createVideoJob({ brief, appUrl, plan }: { brief: string; appUrl: string; plan: VideoAgentPlan }) {

@@ -1,144 +1,214 @@
-# PR Studio Phase 1B Operational Closure Report
-
-## Identification
-
-- Repository: `https://github.com/cnucho/pr-studio.git`
-- Branch: `agent/phase1-video-production`
-- Starting local HEAD: `38d09f46c2550bcac3469411797cdadd56384f38`
-- Starting remote HEAD: `38d09f46c2550bcac3469411797cdadd56384f38`
-- Starting working tree: clean
-- Draft PR: [#3](https://github.com/cnucho/pr-studio/pull/3)
-- Recovery stash preserved: `stash@{0}: On main: codex-reconcile-local-video-worker-2026-07-22`
-- Staging environment identifier: unavailable; no staging Supabase configuration was supplied
-
-### Migration checksums at start
-
-| Migration | SHA-256 |
-|---|---|
-| `202607220001_video_agent_queue.sql` | `0CF3B55A009A3F7CC96DB1E11AC8BB61AA7E6E69EFEC4C80BE4625F0015811A9` |
-| `202607220002_video_production_phase1.sql` | `FE1DE3871234483A9B0F57055C6176F38E114D2EEBF49295889CF42A7CC67414` |
-
-## Preflight and blocking audit
-
-The Phase 1B brief requires an isolated Supabase staging migration and at least one real Creatomate render. The execution environment was audited without printing credential values.
-
-| Requirement | Result |
-|---|---|
-| `SUPABASE_URL` | unavailable |
-| `SUPABASE_SECRET_KEY` | unavailable |
-| `SUPABASE_SERVICE_ROLE_KEY` fallback | unavailable |
-| Supabase CLI | unavailable |
-| `CREATOMATE_API_KEY` | unavailable |
-| `CREATOMATE_TEMPLATE_ID` | unavailable |
-| `CREATOMATE_WEBHOOK_SECRET` | unavailable |
-
-No production or staging database was modified. No external provider request was made. The existing recovery stash was neither applied nor deleted.
-
-## Implemented work available from Phase 1
-
-- Supabase-backed durable video-agent queue and private Storage output
-- Versioned Zod `VideoProject` domain schema and canonical scene timeline
-- Supabase migrations for project revisions, assets, narration, render jobs, attempts, provider usage, webhook events, validation, approval history, and disabled future publishing records
-- Provider-neutral renderer and narration interfaces
-- Creatomate request mapper and status adapter
-- Local renderer wrapper
-- Creatomate callback secret check, payload hashing, deduplication persistence, and provider API re-query trust model
-- Machine-readable output metadata validation foundation
-- Railway worker and Docker configuration
-- `ENABLE_YOUTUBE_PUBLISHING=false`
-
-## Phase 1B work not operationally verified
-
-The following cannot be represented as complete because their mandatory staging or provider evidence is unavailable:
-
-- migrations applied from an empty isolated Supabase database
-- migration reapplication, constraints, RLS, private bucket, rollback, and authorization integration tests
-- persisted revisions 1 and 2 with revision 1 immutability evidence
-- real Creatomate provider job, callback, replay, output, and provider-confirmed usage
-- end-to-end local render through the canonical database state machine
-- durable retry, controlled fallback, and attempt-history evidence
-- real FFprobe validation persisted against cloud and local outputs
-- approval and rejection history tied to immutable revisions
-- authorized private download and unauthorized/cross-project rejection
-- minimal operator UI closure
-
-## Test results
-
-Latest verified Phase 1 baseline before this report:
-
-| Category | Count/result |
-|---|---|
-| Unit tests | 9 passed |
-| Integration tests | 0 staging-backed |
-| Migration tests | 0 staging-backed |
-| Orchestration tests | 0 end-to-end |
-| Webhook tests | 0 provider-backed |
-| Security tests | 0 staging-backed |
-| Regression tests | lint and production build passed |
-| Total automated tests | 9 passed |
-
-No test count is inflated with a mock substituted for a required real staging or Creatomate run.
-
-## Real operational evidence
-
-| Evidence | Status |
-|---|---|
-| Staging migrations | blocked: Supabase staging unavailable |
-| Project revisions 1 and 2 | blocked: Supabase staging unavailable |
-| Real Creatomate job | blocked: Creatomate credentials unavailable |
-| Accepted and duplicate webhook | blocked: real provider job unavailable |
-| FFprobe result | not executed in Phase 1B |
-| Local render through orchestration | not executed in Phase 1B |
-| Controlled fallback | not executed in Phase 1B |
-| Approval and rejection | blocked: persistence environment unavailable |
-| Authorized download | blocked: persistence environment unavailable |
-| Unauthorized rejection | blocked: persistence environment unavailable |
-
-## Required unblocking inputs
-
-Provide these as server environment variables or an approved secure secret mechanism, never in chat or committed files:
-
-```text
-SUPABASE_URL
-SUPABASE_SECRET_KEY
-CREATOMATE_API_KEY
-CREATOMATE_TEMPLATE_ID
-CREATOMATE_WEBHOOK_SECRET
-WEBHOOK_BASE_URL
-```
-
-The Supabase target must be an isolated staging project authorized for migration testing. `WEBHOOK_BASE_URL` must be publicly reachable by Creatomate for the callback test. Supabase CLI installation or a staging database connection workflow must also be authorized.
-
-## Limitations
-
-- Actual provider cost was not returned because no provider job ran.
-- Creatomate authenticity remains based on a secret callback URL/token plus authoritative provider API re-query, not a cryptographic signature header.
-- Operator UI and operational service closure remain incomplete.
-- ElevenLabs remains intentionally unimplemented.
-- YouTube OAuth and publishing remain disabled and intentionally unimplemented.
-- Production rollout has not begun.
-
-## Completion gates
-
-| Gate | Status |
-|---|---|
-| A — Database | BLOCKED |
-| B — Project model | NOT OPERATIONALLY VERIFIED |
-| C — Cloud renderer | BLOCKED |
-| D — Local renderer | NOT OPERATIONALLY VERIFIED |
-| E — Resilience | NOT OPERATIONALLY VERIFIED |
-| F — Validation | NOT OPERATIONALLY VERIFIED |
-| G — Approval | NOT OPERATIONALLY VERIFIED |
-| H — Security | NOT OPERATIONALLY VERIFIED |
-| I — Build | Phase 1 baseline passed; Phase 1B has report-only change |
-
-## Git evidence
-
-- The report will be committed to the existing Phase 1 branch and pushed to draft PR #3.
-- The recovery stash remains preserved.
-- No secrets or generated media are included in this report.
-- Final commit and clean-tree evidence are recorded after commit/push.
+# PR Studio Phase 1B Operational Evidence Report
 
 ## Final verdict
 
-`PHASE_1_BLOCKED_STAGING_MIGRATION`
+`PHASE_1_BLOCKED_SUPABASE_STAGING`
+
+The starting status was `PHASE_1_FOUNDATION_VERIFIED_PHASE_1B_BLOCKED`. Code-level closure advanced materially, but the mandatory real staging run cannot begin because the Railway staging service does not contain Supabase client/server credentials. Creatomate is also not usable until its API key is present. No live gate is represented as complete.
+
+## Identity
+
+- Repository: `https://github.com/cnucho/pr-studio.git`
+- Branch: `agent/phase1-video-production`
+- Starting local and remote commit: `9937c2a63ddc039b6b4af61460e93abc88c3b5f4`
+- Ending implementation commit: recorded in Git/PR evidence after the reviewed files are committed
+- Draft PR: [#3](https://github.com/cnucho/pr-studio/pull/3)
+- Starting stashes: none
+- Preserved unrelated local file: `scripts/record-live-demo.mjs`
+
+### Migration checksums before Phase 1B closure changes
+
+| Migration | SHA-256 |
+|---|---|
+| `202607220001_video_agent_queue.sql` | `2BF46F30C4B5528A9A866C5918C4112B6CA818BD1F668C8C2661D71B2A036AB9` |
+| `202607220002_video_production_phase1.sql` | `D4041655C3DA2B07ADE3278B8D286C6034BA34924E6DD4B4510D1689751B1BCF` |
+| `202607220003_phase1b_closure.sql` | `596E7E1FC5E87D802B385CB631C386B44962E6BF7E447626716090CF84DC39A7` |
+
+The third migration is new in this closure and has not been applied to staging.
+
+## Environment
+
+- Supabase staging project: `pr-studio-staging`, project reference ending `...adgzj`, Sydney region
+- Creatomate staging template: ID ending `...07d21`; dynamic fields observed: `Video.source`, `Text-1.text`, `Text-2.text`
+- Railway project: `pr-studio`
+- Railway environment: `staging` (`5546a096-fd0a-4997-bec9-a1174df6f506`)
+- Railway service: `pr-studio-staging` (`40caf20a-50bf-463b-ad05-cab69af271ca`)
+- Callback base URL: `https://pr-studio-staging-staging.up.railway.app`
+- Staging deployment: stopped; no credential-incomplete deployment was promoted
+
+### Required variable presence
+
+| Variable | Status |
+|---|---|
+| `SUPABASE_URL` | PRESENT |
+| `SUPABASE_ANON_KEY` | MISSING |
+| `SUPABASE_SECRET_KEY` | MISSING |
+| `SUPABASE_SERVICE_ROLE_KEY` | MISSING |
+| `CREATOMATE_API_KEY` | MISSING |
+| `CREATOMATE_TEMPLATE_ID` | PRESENT |
+| `CREATOMATE_WEBHOOK_SECRET` | PRESENT; generated and stored in Railway |
+| `WEBHOOK_BASE_URL` | PRESENT |
+
+No secret value was printed, committed, or returned by an API.
+
+## Implemented code closure
+
+### Authentication and ownership
+
+- Added Supabase bearer-token authentication using the publishable/anonymous key.
+- Added server-only repository operations using `SUPABASE_SECRET_KEY` or the legacy service-role fallback.
+- Project reads and writes require an authenticated owner.
+- Render submission, status, attempts, validation, review, and download resolve ownership server-side.
+- UUID or Storage-path knowledge does not grant access.
+- Added minimal authenticated APIs for project, revision, render, attempts, validation, review, and private download operations.
+
+### RLS model
+
+Model A is selected: **service-role-only trusted operator boundary**.
+
+- Browsers do not query production video tables directly.
+- All supported operations pass through authenticated server routes.
+- Ordinary `anon` and `authenticated` table privileges remain revoked.
+- No broad permissive RLS policies were added.
+- Server secret credentials remain confined to server modules.
+
+### Database integrity
+
+The new closure migration adds:
+
+- required project ownership;
+- explicit project/render lifecycle constraints;
+- progress and nonnegative-cost constraints;
+- immutable revision update/delete triggers;
+- append-only approval-history update/delete triggers;
+- one-decision-per-render uniqueness;
+- owner, attempt, and validation indexes; and
+- enforced private output bucket status.
+
+These statements passed static regression checks but were **not applied to staging** because database credentials are missing. Therefore `MIGRATION_APPLY_FROM_EMPTY`, foreign-key execution, queue claims, stale-lock recovery, and database-backed immutability remain unverified.
+
+### Rendering and provider adapter
+
+- Creatomate requires a nonempty template ID before submission.
+- Documented provider states are mapped deterministically.
+- Missing IDs and unknown states are rejected.
+- Webhook processing stores an initially unprocessed event, updates a known matching render first, and marks the event processed afterward.
+- Duplicate payload hashes return duplicate success without reprocessing.
+- Unknown provider jobs return a conflict rather than false success.
+- Callback terminology: **secret-protected callback with authoritative provider API re-query**.
+
+No provider job was created because `CREATOMATE_API_KEY` is missing. Provider states, output, cost, usage, callback delivery, replay, failure, and timeout evidence remain blocked.
+
+### FFprobe validation
+
+- Added machine-readable normalization for file size, container, video/audio codecs, stream counts, dimensions, frame rate, duration, decodability, SHA-256 checksum, timestamp, validator version, individual checks, and overall result.
+- Added timeout and malformed-output errors to the real FFprobe runner.
+- Tests cover valid evidence, missing audio, wrong dimensions, corrupt/no-video media, and duration outside tolerance.
+
+No real cloud or canonical durable local output was persisted, so the real-output gate remains open.
+
+### Retry, fallback, and approval
+
+- Added bounded exponential retry delay: 15 seconds doubling to a 300-second cap.
+- Only `transient_provider` failures are retryable.
+- Local fallback is allowed only after transient cloud attempts are exhausted.
+- Fallback is prohibited for provider authentication, invalid project, missing template, asset license, output validation, uncertain completion, and local failure categories.
+- Only `awaiting_approval` renders may be approved or rejected.
+- Rejection requires a reason.
+- Approval requires a passing persisted validation result.
+- Approval history stores actor, render, project, revision, decision, reason, and timestamp and is database-constrained append-only.
+
+These policies are unit verified. Durable retry/fallback and approval evidence remains blocked on staging execution.
+
+### Private media
+
+- Storage paths must match the authorized project and render IDs and may not contain traversal.
+- Download filenames are sanitized.
+- Authenticated owner resolution occurs before Storage download.
+- Responses use private no-store caching, actual byte length, and media MIME type.
+
+Real owner/cross-user/unauthenticated Storage delivery remains blocked on staging authentication and persistence.
+
+## Automated verification
+
+| Category | Exact automated count | Result |
+|---|---:|---|
+| Domain schema | 4 | PASS |
+| Migration static checks | 2 | PASS |
+| Persistence integration | 0 | BLOCKED on staging |
+| Queue integration | 0 | BLOCKED on staging |
+| Authorization policy | 7 | PASS |
+| Renderer adapter | 5 | PASS |
+| Orchestration lifecycle | 3 | PASS |
+| Webhook integration | 0 | BLOCKED on provider/staging |
+| FFprobe validation | 5 | PASS |
+| Metadata validation regression | 3 | PASS |
+| Retry | 4 | PASS |
+| Fallback | 9 | PASS |
+| Approval | 3 | PASS |
+| Media delivery policy | 4 | PASS |
+| **Total** | **49** | **PASS** |
+
+Commands:
+
+```text
+npm test
+Result: 2 test files passed; 49 tests passed
+
+npm run lint
+Result: passed
+
+npm run build
+Result: passed; production compilation and TypeScript validation completed; 15 application routes emitted
+
+npm audit --json
+Result: 5 findings; 1 moderate, 4 high, 0 critical
+```
+
+## Dependency audit
+
+| Package | Path and scope | Severity | Runtime relevance | Fixed version | Major change required | Recommendation |
+|---|---|---|---|---|---|---|
+| `brace-expansion` | ESLint/minimatch; development | High | Not production-runtime reachable | `1.1.16` and `5.0.7` for affected ranges | No framework major | Upgrade through compatible lint dependency refresh; do not force globally across majors |
+| `js-yaml` | ESLint configuration; development | High | Not production-runtime reachable | `4.3.0` | No | Upgrade when ESLint accepts the fixed release |
+| `postcss` | Nested under Next.js | Moderate | Build/style processing; not directly invoked by application input | `8.5.10` | Audit currently proposes an unsuitable Next downgrade | Track a supported Next patch containing fixed nested PostCSS |
+| `sharp` | Optional Next.js image pipeline; production dependency | High | Potentially reachable if Next image optimization processes untrusted images | `0.35.0` | Supported Next release required | Avoid untrusted remote image processing and upgrade with a supported Next release |
+| `next` | Direct production framework; aggregate of nested PostCSS/Sharp advisories | High | Production framework | No suitable fix identified by current audit | Audit proposes unsuitable `9.3.3` downgrade | Do not force; test and adopt an official supported patched Next release |
+
+No forced major downgrade or unsafe automatic audit fix was run.
+
+## Operational gate status
+
+| Gate | Status | Reason |
+|---|---|---|
+| A — Staging database | BLOCKED | Supabase server credentials missing from Railway staging |
+| B — Revision immutability | CODE READY; BLOCKED LIVE | Migration not applied; no real revisions persisted |
+| C — Access control | CODE READY; BLOCKED LIVE | Publishable and secret keys missing; users A/B not created |
+| D — Real Creatomate lifecycle | BLOCKED | Creatomate API key missing |
+| E — Live webhook lifecycle | CODE READY; BLOCKED LIVE | No provider job or deployed callback |
+| F — Real output validation | CODE READY; BLOCKED LIVE | No real cloud/canonical local outputs persisted |
+| G — Local renderer | INCOMPLETE LIVE | Existing in-memory adapter is not durable evidence |
+| H — Retry and fallback | POLICY VERIFIED; BLOCKED LIVE | No durable attempts or forced staging failures |
+| I — Approval | CODE READY; BLOCKED LIVE | No awaiting-approval render in staging |
+| J — Private media | CODE READY; BLOCKED LIVE | No authenticated users or stored output |
+| K — Build and regression | PASS | 49 tests, lint, and production build pass |
+
+## Remaining limitations
+
+- The current Creatomate Quick Promo template exposes one video field and two text fields; it has not yet evidenced the required two-scene, narration/audio, and transition test project.
+- The local renderer adapter still uses process memory for status and lacks durable cancellation/restart recovery.
+- Range requests for private media are not implemented; the current preview path downloads the complete object.
+- No staging migrations, real provider render, real callback, real FFprobe persistence, or two-user authorization run was possible.
+- Provider actual cost remains unavailable.
+- Operator UI remains minimal; the closure APIs exist but a general timeline editor is intentionally out of scope.
+- ElevenLabs remains unimplemented.
+- YouTube OAuth and publishing remain disabled and were not expanded.
+- Five dependency audit findings remain documented; no unsafe forced remediation was applied.
+
+## Git evidence
+
+- Only reviewed Phase 1B files are intended for staging and commit.
+- `scripts/record-live-demo.mjs` remains modified, unstaged, and excluded.
+- Existing stashes remain preserved; none existed at baseline.
+- No credential, generated audio, generated video, or provider output is included.
+- Final commit, push result, remote HEAD, and clean scoped diff are reported in the task handoff after Git operations complete.

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const jobId = request.nextUrl.searchParams.get("jobId");
     const queued = jobId ? await downloadQueuedVideo(jobId) : null;
     const [file, metadata] = queued
-      ? [queued.bytes, { mtimeMs: Date.parse(queued.generatedAt) }]
+      ? [queued.bytes, { size: queued.size, mtimeMs: Date.parse(queued.generatedAt) }]
       : await Promise.all([readFile(videoPath), stat(videoPath)]);
 
     return new Response(new Uint8Array(file), {

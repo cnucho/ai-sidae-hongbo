@@ -151,19 +151,20 @@ try {
   const cloudPath = join(temp, "cloud.mp4");
   const cloudBytes = Buffer.from(await (await fetch(provider.url)).arrayBuffer()); await writeFile(cloudPath, cloudBytes);
   const cloudProbe = await probe(cloudPath);
-  check("cloud_ffprobe", cloudProbe.passed, cloudProbe.evidence);
+  evidence.checks.cloud_ffprobe = { passed: cloudProbe.passed, ...cloudProbe.evidence };
   const cloudObject = `${project.id}/${cloud.id}/output.mp4`;
   const cloudUpload = await service.storage.from("video-agent-results").upload(cloudObject, cloudBytes, { contentType: "video/mp4", upsert: false });
   if (cloudUpload.error) throw cloudUpload.error;
-  await update("video_render_jobs", cloud.id, { status: "awaiting_approval", progress: 100, output_uri: cloudObject, output_checksum: cloudProbe.evidence.checksum, provider_response: provider });
-  await service.from("video_render_attempts").update({ status: "completed", finished_at: new Date().toISOString() }).eq("render_id", cloud.id).eq("attempt", 1);
-  await insert("video_validation_results", { render_id: cloud.id, passed: true, checks: cloudProbe.evidence, summary: "Real Creatomate output passed FFprobe" });
-  const approval = await api(`/api/video-renders/${cloud.id}/review`, tokenA, { method: "POST", body: JSON.stringify({ decision: "approved" }) });
-  check("cloud_approval", approval.status === 200, { status: approval.status });
-  const ownerDownload = await fetch(`${baseUrl}/api/video-renders/${cloud.id}/download`, { headers: { authorization: `Bearer ${tokenA}` } });
-  const otherDownload = await fetch(`${baseUrl}/api/video-renders/${cloud.id}/download`, { headers: { authorization: `Bearer ${tokenB}` } });
-  const anonDownload = await fetch(`${baseUrl}/api/video-renders/${cloud.id}/download`);
-  check("private_media", ownerDownload.status === 200 && otherDownload.status === 404 && anonDownload.status === 401, { owner: ownerDownload.status, other: otherDownload.status, anonymous: anonDownload.status, length: Number(ownerDownload.headers.get("content-length")) });
+  await update("video_render_jobs", cloud.id, { status: cloudProbe.passed ? "awaiting_approval" : "failed", progress: 100, output_uri: cloudObject, output_checksum: cloudProbe.evidence.checksum, provider_response: provider, failure_category: cloudProbe.passed ? null : "output_validation", failure_message: cloudProbe.passed ? null : "Creatomate trial output dimensions differ from requested dimensions" });
+  await service.from("video_render_attempts").update({ status: cloudProbe.passed ? "completed" : "failed", error: cloudProbe.passed ? null : { category: "output_validation", checks: cloudProbe.checks }, finished_at: new Date().toISOString() }).eq("render_id", cloud.id).eq("attempt", 1);
+  await insert("video_validation_results", { render_id: cloud.id, passed: cloudProbe.passed, checks: cloudProbe.evidence, summary: cloudProbe.passed ? "Real Creatomate output passed FFprobe" : "Real Creatomate output failed requested-dimension validation" });
+  if (cloudProbe.passed) {
+    const approval = await api(`/api/video-renders/${cloud.id}/review`, tokenA, { method: "POST", body: JSON.stringify({ decision: "approved" }) });
+    check("cloud_approval", approval.status === 200, { status: approval.status });
+  } else {
+    const invalidApproval = await api(`/api/video-renders/${cloud.id}/review`, tokenA, { method: "POST", body: JSON.stringify({ decision: "approved" }) });
+    check("invalid_cloud_approval_rejected", invalidApproval.status === 400, { status: invalidApproval.status });
+  }
 
   const localQueued = await api("/api/video-renders", tokenA, { method: "POST", body: JSON.stringify({ projectId: project.id, revision: 2, provider: "local" }) });
   check("local_render_persisted", localQueued.status === 200, { status: localQueued.status });
@@ -176,10 +177,25 @@ try {
   await update("video_render_jobs", local.id, { status: "awaiting_approval", progress: 100, output_uri: localObject, output_checksum: localProbe.evidence.checksum, attempt_count: 1 });
   await service.from("video_render_attempts").update({ status: "completed", finished_at: new Date().toISOString() }).eq("render_id", local.id).eq("attempt", 1);
   await insert("video_validation_results", { render_id: local.id, passed: true, checks: localProbe.evidence, summary: "Real local FFmpeg output passed FFprobe" });
-  const reject = await api(`/api/video-renders/${local.id}/review`, tokenA, { method: "POST", body: JSON.stringify({ decision: "rejected", reason: "Operational rejection-history evidence" }) });
+  const ownerDownload = await fetch(`${baseUrl}/api/video-renders/${local.id}/download`, { headers: { authorization: `Bearer ${tokenA}` } });
+  const otherDownload = await fetch(`${baseUrl}/api/video-renders/${local.id}/download`, { headers: { authorization: `Bearer ${tokenB}` } });
+  const anonDownload = await fetch(`${baseUrl}/api/video-renders/${local.id}/download`);
+  check("private_media", ownerDownload.status === 200 && otherDownload.status === 404 && anonDownload.status === 401, { owner: ownerDownload.status, other: otherDownload.status, anonymous: anonDownload.status, length: Number(ownerDownload.headers.get("content-length")) });
+  const localApproval = await api(`/api/video-renders/${local.id}/review`, tokenA, { method: "POST", body: JSON.stringify({ decision: "approved" }) });
+  check("local_approval", localApproval.status === 200, { status: localApproval.status });
+
+  const rejectQueued = await api("/api/video-renders", tokenA, { method: "POST", body: JSON.stringify({ projectId: project.id, revision: 2, provider: "local" }) });
+  check("rejection_render_persisted", rejectQueued.status === 200, { status: rejectQueued.status });
+  const rejectionRender = rejectQueued.body.data;
+  const rejectionObject = `${project.id}/${rejectionRender.id}/output.mp4`;
+  const rejectionUpload = await service.storage.from("video-agent-results").upload(rejectionObject, localBytes, { contentType: "video/mp4", upsert: false }); if (rejectionUpload.error) throw rejectionUpload.error;
+  await update("video_render_jobs", rejectionRender.id, { status: "awaiting_approval", progress: 100, output_uri: rejectionObject, output_checksum: localProbe.evidence.checksum, attempt_count: 1 });
+  await service.from("video_render_attempts").update({ status: "completed", finished_at: new Date().toISOString() }).eq("render_id", rejectionRender.id).eq("attempt", 1);
+  await insert("video_validation_results", { render_id: rejectionRender.id, passed: true, checks: localProbe.evidence, summary: "Local rejection candidate passed FFprobe" });
+  const reject = await api(`/api/video-renders/${rejectionRender.id}/review`, tokenA, { method: "POST", body: JSON.stringify({ decision: "rejected", reason: "Operational rejection-history evidence" }) });
   check("local_rejection", reject.status === 200, { status: reject.status });
 
-  evidence.completedAt = new Date().toISOString(); evidence.verdict = "OPERATIONAL_RUN_COMPLETED";
+  evidence.completedAt = new Date().toISOString(); evidence.verdict = cloudProbe.passed ? "OPERATIONAL_RUN_COMPLETED" : "OPERATIONAL_RUN_BLOCKED_OUTPUT_VALIDATION";
   const output = join(process.cwd(), "reports", "phase1b-staging-evidence.json");
   await writeFile(output, JSON.stringify(evidence, null, 2));
   console.log(JSON.stringify({ ok: true, output, runId: evidence.runId, projectId: evidence.projectId, cloudRenderId: evidence.cloudRenderId, localRenderId: evidence.localRenderId, checks: Object.keys(evidence.checks).length }));

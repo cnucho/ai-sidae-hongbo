@@ -731,7 +731,7 @@ The platform protects the official files as immutable evidence, not merely as do
 Not claimed in this MVP:
 
 ```text
-Public anonymous catalog · SSO/MFA · national deployment · high availability
+External SSO/MFA · national deployment · high availability · independent accessibility certification
 ```
 
 ### Visual

@@ -8,6 +8,12 @@
     "start": "node scripts/start-next.mjs",
     "lint": "eslint .",
     "render:video": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/render-final-video.ps1",
+    "kg-demo:slides": "node scripts/kg-statistics-demo-slides.mjs",
+    "kg-demo:subtitles": "node scripts/kg-statistics-demo-subtitles.mjs",
+    "kg-demo:record": "node scripts/kg-statistics-demo-record.mjs",
+    "kg-demo:render": "node scripts/kg-statistics-demo-render.mjs",
+    "kg-demo:verify": "node scripts/kg-statistics-demo-verify.mjs",
+    "kg-demo:all": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/produce-kg-statistics-demo.ps1",
     "render:correction-demo": "node scripts/render-correction-level-agent-demo.mjs",
     "render:car-meta-hub-demo": "node scripts/render-car-meta-hub-review-demo.mjs"
   },

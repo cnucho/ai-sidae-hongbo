@@ -330,7 +330,7 @@ The platform also provides integrity-verified downloads, stable database operati
 
 This completion statement is deliberately limited.
 
-The MVP does not claim an anonymous public catalog, external single sign-on or multi-factor authentication, national-scale high availability, complete monitoring integration, or independent accessibility certification.
+The verified baseline includes the anonymous public catalog. It does not claim external single sign-on or multi-factor authentication, national-scale high availability, complete monitoring integration, or independent accessibility certification.
 
 Those are separate deployment and governance decisions.
 

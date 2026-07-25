@@ -13,6 +13,7 @@ const { Presentation, PresentationFile } = await import(
 
 const candidates = path.join(outDir, "screenshot-candidates");
 const designerCandidates = path.join(outDir, "questionnaire-designer-candidates");
+const featureCandidates = path.join(outDir, "feature-candidates");
 const slidesDir = path.join(workDir, "briefing-slides");
 await mkdir(slidesDir, { recursive: true });
 const sourceCommit = "3bc7f25";
@@ -40,8 +41,9 @@ function addText(slide, value, position, style = {}) {
 }
 
 async function addScreenshot(slide, file, alt, position = { left: 660, top: 205, width: 1160, height: 680 }) {
-  const sourceDir = file.startsWith("designer:") ? designerCandidates : candidates;
-  const sourceFile = file.replace(/^designer:/, "");
+  const sourceDir = file.startsWith("designer:") ? designerCandidates :
+    file.startsWith("feature:") ? featureCandidates : candidates;
+  const sourceFile = file.replace(/^(designer|feature):/, "");
   const bytes = await readFile(path.join(sourceDir, sourceFile));
   shape(slide, "roundRect",
     { left: position.left - 12, top: position.top - 12, width: position.width + 24, height: position.height + 24 },
@@ -161,42 +163,99 @@ const slideSpecs = [
     ["Mode, field dates, and device profile are explicit", "The collection package is versioned and traceable", "Offline work begins only from the accepted package"],
     "15-collection-input.png", "Prepare collection form",
     "The system connects questionnaire approval to practical field preparation."],
-  ["Collection and synchronization", "12", "Offline responses return through an accepted server batch",
+  ["Response formats", "12", "Each question uses the response control appropriate to the data",
+    ["Text, integer, decimal, date, single-choice, multiple-choice, roster, and repeated-table controls", "Required status, choice codes, ranges, and validation are configured with the question", "Conditional display and skip logic use the same stable question identifiers"],
+    "designer:03-define-question.png", "Question editor with response type and validation settings",
+    "The designer controls not only the wording, but also exactly how each response is captured and validated."],
+  ["Devices", "13", "The same approved questionnaire adapts to phone, tablet, desktop, and print",
+    ["A runtime package contains target-specific render profiles", "Mobile screens keep one task and touch-friendly controls in view", "Tablet, desktop, and print modes reuse the same governed question definitions"],
+    "feature:07-response-mobile-single-choice.png", "Phone-sized single-choice response screen",
+    "Field teams can use the device appropriate to the operation without maintaining a separate questionnaire."],
+  ["Device setup", "14", "The collection team selects the target format without redesigning the survey",
+    ["Mobile, tablet, desktop, and print are explicit runtime targets", "The selected target reports its screen count and layout status", "One package can support mixed-device field operations"],
+    "feature:01-response-device-profiles.png", "Response workbench device-profile selector",
+    "The device is an operational setting, not a separate copy of the questionnaire."],
+  ["Tablet operation", "15", "Tablet collection uses the same questions with a roomier interview layout",
+    ["Touch controls remain suitable for interviewer use", "The tablet profile comes from the approved runtime package", "Answers retain the same question IDs and validation rules"],
+    "feature:09-response-tablet-profile.png", "Tablet response screen",
+    "Field agencies can standardize on tablets while retaining phone and desktop fallbacks."],
+  ["Languages", "14", "English, Russian, and Kyrgyz are supported in one operating environment",
+    ["Operators can change the interface language", "Questionnaire labels preserve multilingual text in one version", "Changing language does not change artifact identity, rules, or audit evidence"],
+    "feature:05-response-kyrgyz-interface.png", "Kyrgyz-language response workbench",
+    "Language is a presentation choice; the controlled survey definition and evidence remain consistent."],
+  ["Russian operation", "15", "Russian-language operators use the same governed workflow",
+    ["The interface language changes from the visible language selector", "Runtime status and controls are localized", "The same survey IDs, conditions, and audit records remain active"],
+    "feature:04-response-russian-interface.png", "Russian-language response workbench",
+    "A multilingual team can work in its preferred interface without fragmenting the production record."],
+  ["Offline collection", "15", "Interviews can be completed offline and synchronized later",
+    ["Validated answers are packaged as offline_response_batch.v1", "Local batch identity supports retry and duplicate handling", "Server synchronization reports received, accepted, duplicate, and rejected counts"],
+    "feature:08-response-mobile-offline-batch.png", "Offline response batch produced on a mobile screen",
+    "A temporary network loss does not require the interviewer to abandon or recreate the interview."],
+  ["Collection and synchronization", "16", "Offline responses return through an accepted server batch",
     ["Field identity and batch ownership are checked", "Received, accepted, duplicate, and rejected counts come from server evidence", "Respondent rows are not exposed in the publication workflow"],
     "20-synchronization-receipt.png", "Response synchronization receipt and active evidence",
     "This is the controlled boundary between field capture and statistical production."],
-  ["Cleaning review", "13", "Cleaning decisions remain linked to synchronized responses",
+  ["Cleaning criteria", "17", "Cleaning rules are explicit before they are executed",
+    ["The workbench accepts a versioned cleaning_rule_package.v1", "Rules can cover missingness, ranges, code lists, duplicates, and cross-field consistency", "The original raw dataset remains separate from the cleaned result"],
+    "feature:10-cleaning-criteria.png", "Cleaning rules and raw dataset loaded before execution",
+    "A reviewer can see which rules will be applied instead of accepting an unexplained data transformation."],
+  ["Cleaning review", "18", "Cleaning results expose profile, flags, and lineage",
     ["Cleaning methods and quality flags are recorded", "A separate reviewer accepts or rejects the cleaned result", "Historical evidence remains available when later work is superseded"],
-    "23-cleaning-receipt.png", "Accepted cleaning review receipt",
+    "feature:11-cleaning-profile-flags.png", "Cleaning profile and review flags",
     "The system records not only a clean dataset, but also who reviewed it and why."],
-  ["Analysis", "14", "Analysts produce publishable indicators and tables from approved data",
-    ["Report metadata, locale, template, and version are explicit", "Indicators contain units, precision, and uncertainty", "The report package preserves upstream lineage"],
-    "24-analysis-input.png", "Analysis and report production form",
+  ["Cleaning receipt", "19", "Every cleaning run leaves a versioned, reviewable receipt",
+    ["The receipt identifies the source dataset and rule package", "Applied fixes and unresolved flags remain inspectable", "Downstream analysis can reference the exact accepted cleaning result"],
+    "feature:12-cleaning-receipt.png", "Versioned cleaning receipt",
+    "The result is reproducible because the system preserves both the criteria and the execution evidence."],
+  ["Analysis", "19", "Analysts define tables, segments, and chart-ready results",
+    ["Choose automatic tables, segment specifications, or both", "Import CSV/XLSX segment definitions or configure crosstabs in the screen", "Generated tables retain variable, denominator, weight, unit, and precision metadata"],
+    "feature:14-analysis-table-settings.png", "Analysis strategy and crosstab settings",
     "Operators work with aggregate statistical results rather than raw respondent records."],
-  ["Independent verification", "15", "Verification is a distinct, reproducible decision",
+  ["Analytical results", "20", "Preview tables are reviewed before they become official outputs",
+    ["Generated tasks show what the system calculated", "Preview tables expose dimensions, categories, counts, and estimates", "Warnings remain visible before verification"],
+    "feature:15-analysis-preview-tables.png", "Generated analysis preview tables",
+    "Statisticians can inspect the proposed results before independent verification and publication."],
+  ["Table and chart package", "21", "A structured package carries tables and chart definitions forward",
+    ["The package is versioned and machine-readable", "Formatting intent stays separate from verified cell values", "HTML, PDF, CSV, and XLSX renderers consume the same normalized evidence"],
+    "feature:16-analysis-table-chart-package.png", "Versioned table and chart definition package",
+    "One controlled analytical source supports several publication formats without recalculating results."],
+  ["Report inputs", "22", "Report generation starts only from verified analytical evidence",
+    ["The report workbench receives the table/chart package", "The independent verification receipt is an explicit input", "Missing or mismatched verification prevents a trusted report path"],
+    "feature:17-report-verified-inputs.png", "Verified analytical inputs for report generation",
+    "Report prose and layout are downstream of verification, not a substitute for it."],
+  ["Report composition", "20", "Verified tables become readable report sections and controlled packages",
+    ["Evidence-supported summaries are generated from verified table cells", "Warnings remain visible when a statement is not supported", "The versioned report package feeds the existing HTML, PDF, CSV, and XLSX renderers"],
+    "feature:18-report-table-summaries.png", "Report table summaries generated from verified tables",
+    "The system joins statistical tables, readable interpretation, and publication metadata without losing lineage."],
+  ["Report package", "23", "The complete report is preserved as a versioned publication package",
+    ["Titles, sections, tables, summaries, warnings, and references travel together", "The package remains inspectable before rendering", "Publication outputs can be regenerated deterministically from the accepted package"],
+    "feature:19-report-report-package.png", "Versioned report package",
+    "The report package is the controlled bridge between statistical production and downloadable files."],
+  ["Independent verification", "21", "Verification is a distinct, reproducible decision",
     ["PASSED, FAILED, and INCOMPLETE remain explicit outcomes", "Methods, tables, cells, discrepancies, and report hash are recorded", "The report producer cannot verify their own output"],
     "29-verification-receipt.png", "Independent verification receipt",
     "Only PASSED verification bound to the exact report can continue."],
-  ["Publication governance", "16", "Publication approval is separate from technical verification",
+  ["Publication governance", "22", "Publication approval is separate from technical verification",
     ["The approver reviews the verified report", "The decision is bound to the same active report evidence", "Publisher authority cannot manufacture missing approval"],
     "32-publication-approval-receipt.png", "Publication approval receipt",
     "Governance remains visible: verification, approval, and release are different authorities."],
-  ["Official outputs", "17", "One immutable release delivers every official format",
+  ["Official outputs", "23", "One immutable release delivers every official format",
     ["Standalone HTML and publication-quality PDF", "Formatted XLSX plus table and cell-lineage CSV", "Every file has persisted identity, size, MIME type, and SHA-256"],
     "37-release-inventory.png", "Immutable release inventory with HTML PDF CSV and XLSX",
     "The audience can see real downloadable publication files—not a JSON promise or screen-only report."]
 ];
 
-for (const [section, number, titleText, bullets, image, alt, takeaway] of slideSpecs) {
+for (const [section, , titleText, bullets, image, alt, takeaway] of slideSpecs) {
   const slide = deck.slides.add();
-  addChrome(slide, section, number, titleText, takeaway);
+  const displayNumber = String(deck.slides.items.length).padStart(2, "0");
+  addChrome(slide, section, displayNumber, titleText, takeaway);
   addBullets(slide, bullets);
   await addScreenshot(slide, image, alt);
   addNotes(slide, takeaway, image);
 }
 
 const learning = deck.slides.add();
-addChrome(learning, "Ease of use", "18", "Help is available where the operator needs it—without cluttering the screen",
+addChrome(learning, "Ease of use", String(deck.slides.items.length).padStart(2, "0"), "Help is available where the operator needs it—without cluttering the screen",
   "Operators can learn the system in context, while the normal workspace stays focused.");
 addBullets(learning, [
   "Screen and action guidance opens only after pressing Help",
@@ -207,7 +266,7 @@ await addScreenshot(learning, "08-support-survey-guide.png", "In-application ten
 addNotes(learning, "The Help area is an internal manual organized by the real survey sequence. Contextual help is hidden until requested.", "08-support-survey-guide.png");
 
 const service = deck.slides.add();
-addChrome(service, "Maintenance", "19", "Operations are supported as a service, not left to each survey team",
+addChrome(service, "Maintenance", String(deck.slides.items.length).padStart(2, "0"), "Operations are supported as a service, not left to each survey team",
   "The operating model combines an in-application manual, controlled updates, and remote SaaS support.");
 const serviceItems = [
   ["MANUAL", "In-application guidance now; illustrated downloadable manuals can use the same verified content."],

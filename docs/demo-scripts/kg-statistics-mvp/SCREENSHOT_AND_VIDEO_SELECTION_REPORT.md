@@ -24,9 +24,10 @@ The process did not reuse the earlier project-hub scroll variants.
 
 - Operator-workflow candidates: **38**
 - Questionnaire-designer candidates: **15**
-- Total screenshot candidates: **53**
-- Selected screenshots: **21**
-- Candidate-to-selection ratio: **2.52×**
+- Detailed-feature candidates: **19**
+- Total screenshot candidates: **72**
+- Selected screenshots: **36**
+- Candidate-to-selection ratio: **2.00×**
 - Application language: English
 - Capture size: 1600×1000
 - Credentials or tokens visible: no
@@ -52,12 +53,19 @@ The selected set now covers:
 16. independent verification receipt;
 17. publication approval receipt;
 18. immutable official release inventory;
-19. ten-stage in-application guide.
+19. ten-stage in-application guide;
+20. phone, tablet, desktop, and print profiles;
+21. English, Russian, and Kyrgyz interfaces;
+22. mobile response controls and offline batch export;
+23. explicit cleaning criteria, profile flags, and cleaning receipt;
+24. table strategy, crosstab setup, preview tables, and table/chart package;
+25. verified report inputs, evidence-supported summaries, and report package.
 
 ## English briefing
 
-The 20-slide briefing is organized for the audience rather than the software
-architecture:
+The 34-slide briefing is an expanded presenter-selectable master. It is
+organized for the audience rather than the software architecture. A presenter
+may omit detail slides for a shorter meeting without editing the source:
 
 1. briefing purpose;
 2. complete survey-stage coverage;
@@ -70,15 +78,29 @@ architecture:
 9. governed questionnaire submission;
 10. independent questionnaire approval;
 11. field preparation;
-12. collection and synchronization;
-13. cleaning review;
-14. analysis;
-15. independent verification;
-16. publication governance;
-17. official HTML/PDF/CSV/XLSX outputs;
-18. in-application learning;
-19. maintenance, updates, and SaaS support;
-20. proposed pilot decision.
+12. response formats;
+13. mobile response;
+14. device-profile setup;
+15. tablet operation;
+16. Kyrgyz-language operation;
+17. Russian-language operation;
+18. offline batch creation;
+19. collection synchronization;
+20. cleaning criteria;
+21. cleaning profile and flags;
+22. cleaning receipt;
+23. analysis and crosstab settings;
+24. preview tables;
+25. table/chart package;
+26. verified report inputs;
+27. report summaries;
+28. report package;
+29. independent verification;
+30. publication governance;
+31. official HTML/PDF/CSV/XLSX outputs;
+32. in-application learning;
+33. maintenance, updates, and SaaS support;
+34. proposed pilot decision.
 
 Generated review files:
 
@@ -128,12 +150,12 @@ or a fabricated success image.
 | --- | --- |
 | Application production build | PASS |
 | Authenticated 10-stage workflow capture | PASS |
-| Screenshot candidates | 53 |
-| Selected screenshots | 21 |
-| Candidate ratio | 2.52× |
-| English PPTX pages | 20 |
+| Screenshot candidates | 72 |
+| Selected screenshots | 36 |
+| Candidate ratio | 2.00× |
+| English PPTX pages | 34 |
 | PowerPoint overflow test | PASS |
-| English PDF pages | 20 |
+| English PDF pages | 34 |
 | PDF page render inspection | PASS |
 | Selected video clips | 7 |
 | Video dimensions | 1920×1080 |
@@ -142,7 +164,8 @@ or a fabricated success image.
 
 ## Next editing action
 
-Use the briefing deck as the explanatory spine. Insert the six selected clips
+Use the expanded briefing deck as the explanatory spine. The presenter may
+remove detail slides to fit the meeting. Insert the seven selected clips
 only after their corresponding static explanation. Add calm English narration,
 concise English subtitles, and separate Kyrgyz subtitles after the screen and
 clip selection is approved. Do not expand the video into a feature inventory.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
@@ -8,7 +8,13 @@ import { outDir } from "./kg-statistics-demo-common.mjs";
 
 const kgRoot = path.resolve(process.env.KG_SYSTEM_ROOT ?? "C:\\github_app\\_worktrees\\survey-workflow-kg-help");
 const outputDir = path.join(outDir, "questionnaire-designer-candidates");
+const rawVideoDir = path.join(outDir, "work", "questionnaire-designer-video");
+const selectedVideoDir = path.join(outDir, "selected-video-clips");
+await rm(outputDir, { recursive: true, force: true });
+await rm(rawVideoDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
+await mkdir(rawVideoDir, { recursive: true });
+await mkdir(selectedVideoDir, { recursive: true });
 
 const requireKg = createRequire(path.join(kgRoot, "package.json"));
 const { chromium } = requireKg("playwright");
@@ -27,7 +33,12 @@ const server = await spawnWorkbenchForBrowserTest("scripts/serve-question-input-
   env: { QUESTION_DESIGNER_DISABLE_REMOTE: "1" }
 });
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, acceptDownloads: true });
+const context = await browser.newContext({
+  viewport: { width: 1920, height: 1080 },
+  acceptDownloads: true,
+  recordVideo: { dir: rawVideoDir, size: { width: 1920, height: 1080 } }
+});
+const page = await context.newPage();
 const candidates = [];
 let number = 0;
 
@@ -37,6 +48,16 @@ async function capture(slug, description, { fullPage = false } = {}) {
   const id = String(number).padStart(2, "0");
   const file = `${id}-${slug}.png`;
   await page.screenshot({ path: path.join(outputDir, file), fullPage });
+  candidates.push({ id, slug, description, file, selected: false });
+}
+
+async function captureRegion(slug, description, locator) {
+  number += 1;
+  await locator.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(250);
+  const id = String(number).padStart(2, "0");
+  const file = `${id}-${slug}.png`;
+  await locator.screenshot({ path: path.join(outputDir, file) });
   candidates.push({ id, slug, description, file, selected: false });
 }
 
@@ -64,14 +85,15 @@ try {
   await capture("condition-builder", "Deterministic response-condition and routing builder");
   const source = page.getByLabel("condition source");
   const target = page.getByLabel("condition target");
-  if (await source.locator("option").count() > 1 && await target.locator("option").count() > 1) {
-    await source.selectOption({ index: 1 });
-    await target.selectOption({ index: 2 });
+  if (await source.locator('option[value="worked_last_7_days"]').count() &&
+      await target.locator('option[value="main_employment_status"]').count()) {
+    await source.selectOption("worked_last_7_days");
+    await target.selectOption("main_employment_status");
     await page.getByLabel("condition effect").selectOption("show_if");
     await page.getByLabel("condition operator").selectOption("==");
     await page.getByRole("textbox", { name: "Value", exact: true }).fill("yes");
     await page.getByRole("button", { name: "Build condition card", exact: true }).click();
-    await capture("condition-card", "Readable Show-if condition before it is applied");
+    await captureRegion("condition-card", "Show employment status only when the person worked in the last seven days", page.locator(".condition-builder-form").locator(".."));
   }
 
   await tab("Flow");
@@ -88,6 +110,16 @@ try {
   await capture("module-library", "KG household module library with common questions and rule templates");
   await page.locator(".bank-grid").scrollIntoViewIfNeeded();
   await capture("existing-surveys", "Existing reusable surveys available for editing");
+  await page.locator('input[type="file"]').setInputFiles(
+    path.join(path.resolve(process.cwd(), "..", ".."), "pr-studio", "docs", "demo-scripts",
+      "kg-statistics-mvp", "household-living-conditions-questionnaire.json")
+  );
+  await page.waitForTimeout(1200);
+  const importStatus = await page.locator(".editor-head p").innerText().catch(() => "");
+  assert.match(importStatus, /^Imported \d+ question rows from /, `Import did not complete: ${importStatus}`);
+  await capture("imported-questionnaire", "A real existing questionnaire file imported into the editable question list");
+  await page.locator(".editor-scroll").scrollIntoViewIfNeeded();
+  await capture("imported-questionnaire-editor", "Imported questions immediately available for editing");
 
   await tab("Review");
   await page.getByRole("button", { name: "Question QA", exact: true }).click();
@@ -99,8 +131,8 @@ try {
   await capture("export-contracts", "Validated questionnaire export options including XLSForm and collection package");
 
   const selected = new Set([
-    "author-sheet", "define-existing-question", "condition-card",
-    "flow-map", "survey-bank", "module-library"
+    "author-sheet", "define-existing-question", "condition-card", "flow-map",
+    "survey-bank", "module-library", "imported-questionnaire-editor"
   ]);
   for (const item of candidates) item.selected = selected.has(item.slug);
   await writeFile(path.join(outputDir, "candidate-inventory.json"), JSON.stringify({
@@ -117,6 +149,11 @@ try {
     outputDir
   }, null, 2));
 } finally {
+  const video = page.video();
+  await context.close();
+  if (video) {
+    await cp(await video.path(), path.join(selectedVideoDir, "questionnaire-design-import-condition.webm"));
+  }
   await browser.close();
   await server.close();
 }

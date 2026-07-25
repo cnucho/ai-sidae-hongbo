@@ -10,8 +10,8 @@ SLIDES = OUT / "work" / "briefing-slides"
 TARGET = OUT / "kg-statistics-nsc-briefing-en.pdf"
 
 images = sorted(SLIDES.glob("briefing-slide-*.png"))
-if len(images) != 19:
-    raise RuntimeError(f"Expected 19 briefing slides, found {len(images)}")
+if len(images) != 20:
+    raise RuntimeError(f"Expected 20 briefing slides, found {len(images)}")
 
 page_width, page_height = 1920, 1080
 pdf = canvas.Canvas(str(TARGET), pagesize=(page_width, page_height))

@@ -23,10 +23,10 @@ The candidate set was captured from a new authenticated end-to-end workflow.
 The process did not reuse the earlier project-hub scroll variants.
 
 - Operator-workflow candidates: **38**
-- Questionnaire-designer candidates: **13**
-- Total screenshot candidates: **51**
-- Selected screenshots: **20**
-- Candidate-to-selection ratio: **2.55×**
+- Questionnaire-designer candidates: **15**
+- Total screenshot candidates: **53**
+- Selected screenshots: **21**
+- Candidate-to-selection ratio: **2.52×**
 - Application language: English
 - Capture size: 1600×1000
 - Credentials or tokens visible: no
@@ -36,47 +36,49 @@ The selected set now covers:
 
 1. direct spreadsheet-style questionnaire input;
 2. selected-question form editing;
-3. existing-survey import and Survey Bank;
-4. KG household modules, code lists, and rule templates;
-5. response conditions and routing;
-6. questionnaire flow-map review;
-7. sign-in help;
-8. project starting state and access;
-9. governed questionnaire submission;
-10. questionnaire approval receipt;
-11. collection preparation;
-12. synchronization receipt;
-13. cleaning receipt;
-14. analysis input and receipt;
-15. independent verification receipt;
-16. publication approval receipt;
-17. immutable official release inventory;
-18. ten-stage in-application guide.
+3. a real ten-question household survey reopened from a saved project;
+4. Survey Bank and supported import controls;
+5. KG household modules, code lists, and rule templates;
+6. response conditions and routing;
+7. questionnaire flow-map review;
+8. sign-in help;
+9. project starting state and access;
+10. governed questionnaire submission;
+11. questionnaire approval receipt;
+12. collection preparation;
+13. synchronization receipt;
+14. cleaning receipt;
+15. analysis input and receipt;
+16. independent verification receipt;
+17. publication approval receipt;
+18. immutable official release inventory;
+19. ten-stage in-application guide.
 
 ## English briefing
 
-The 19-slide briefing is organized for the audience rather than the software
+The 20-slide briefing is organized for the audience rather than the software
 architecture:
 
 1. briefing purpose;
 2. complete survey-stage coverage;
 3. controlled project and access;
 4. direct questionnaire input;
-5. import, Survey Bank, and reusable modules;
-6. response conditions and routing;
-7. questionnaire flow review;
-8. governed questionnaire submission;
-9. independent questionnaire approval;
-10. field preparation;
-11. collection and synchronization;
-12. cleaning review;
-13. analysis;
-14. independent verification;
-15. publication governance;
-16. official HTML/PDF/CSV/XLSX outputs;
-17. in-application learning;
-18. maintenance, updates, and SaaS support;
-19. proposed pilot decision.
+5. reopen a real existing household questionnaire;
+6. Survey Bank and reusable modules;
+7. response conditions and routing;
+8. questionnaire flow review;
+9. governed questionnaire submission;
+10. independent questionnaire approval;
+11. field preparation;
+12. collection and synchronization;
+13. cleaning review;
+14. analysis;
+15. independent verification;
+16. publication governance;
+17. official HTML/PDF/CSV/XLSX outputs;
+18. in-application learning;
+19. maintenance, updates, and SaaS support;
+20. proposed pilot decision.
 
 Generated review files:
 
@@ -89,21 +91,36 @@ Generated review files:
 
 Only actions that benefit materially from motion were recorded:
 
-1. questionnaire submission;
-2. accepted field-batch synchronization;
-3. analysis and report production;
-4. independent verification;
-5. publication export request;
-6. immutable release generation.
+1. questionnaire authoring, Survey Bank, import, condition setting, and flow review;
+2. questionnaire submission;
+3. accepted field-batch synchronization;
+4. analysis and report production;
+5. independent verification;
+6. publication export request;
+7. immutable release generation.
 
-The six selected clips are real Playwright recordings of the authenticated
-React operator application at 1920×1080. Authentication occurred in a separate
-non-recorded context. The clips contain no password entry, token display, raw
-respondent rows, role-switch simulation, or sample release fallback.
+The seven selected clips are real Playwright recordings of the questionnaire
+designer and authenticated React operator application at 1920×1080.
+Authentication occurred in a separate non-recorded context. The clips contain
+no password entry, token display, raw respondent rows, role-switch simulation,
+or sample release fallback.
 
 The clips are short review selects. They are intentionally kept separate from
 the briefing master so the final presentation can use only the approved moments
 and add English narration at the correct visual pace.
+
+## Confirmed questionnaire-import boundary
+
+The current React designer visibly accepts saved project JSON and XLS/XLSX.
+The wider repository also contains adapters and documentation for CSV, TSV,
+QSF, and Markdown authoring inputs, but those formats are not all exposed by
+the React designer's current file picker. The briefing therefore does not claim
+that every documented adapter is available through this specific screen.
+
+The demonstration import uses a real `question_input_project.v1` file containing
+ten household-living-conditions questions, multilingual labels, choices,
+validation, and employment-routing conditions. It does not use an empty dialog
+or a fabricated success image.
 
 ## Verification
 
@@ -111,14 +128,14 @@ and add English narration at the correct visual pace.
 | --- | --- |
 | Application production build | PASS |
 | Authenticated 10-stage workflow capture | PASS |
-| Screenshot candidates | 51 |
-| Selected screenshots | 20 |
-| Candidate ratio | 2.55× |
-| English PPTX pages | 19 |
+| Screenshot candidates | 53 |
+| Selected screenshots | 21 |
+| Candidate ratio | 2.52× |
+| English PPTX pages | 20 |
 | PowerPoint overflow test | PASS |
-| English PDF pages | 19 |
+| English PDF pages | 20 |
 | PDF page render inspection | PASS |
-| Selected video clips | 6 |
+| Selected video clips | 7 |
 | Video dimensions | 1920×1080 |
 | Video codec | VP8/WebM |
 | Visible secrets/respondent rows | none |

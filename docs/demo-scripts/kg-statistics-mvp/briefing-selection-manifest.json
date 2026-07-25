@@ -8,16 +8,17 @@
   "audience": "Kyrgyz Republic National Statistical Committee",
   "language": "en",
   "scenario": "Household Living Conditions Survey 2026",
-  "candidateScreenshots": 51,
-  "selectedScreenshots": 20,
-  "candidateRatio": 2.55,
+  "candidateScreenshots": 53,
+  "selectedScreenshots": 21,
+  "candidateRatio": 2.52,
   "selectedScreenshotIds": [
     "02", "06", "07", "08", "09", "14", "15", "20", "23", "24", "26", "29", "32", "37"
   ],
   "selectedQuestionnaireDesignerScreenshotIds": [
-    "01", "04", "06", "07", "09", "10"
+    "01", "04", "06", "07", "09", "10", "13"
   ],
   "selectedVideos": [
+    "questionnaire-design-import-condition.webm",
     "questionnaire-workflow.webm",
     "synchronization-workflow.webm",
     "analysis-workflow.webm",
@@ -26,7 +27,7 @@
     "release-generation.webm"
   ],
   "briefing": {
-    "slides": 19,
+    "slides": 20,
     "pptx": "out/kg-statistics-mvp-demo/kg-statistics-nsc-briefing-en.pptx",
     "pdf": "out/kg-statistics-mvp-demo/kg-statistics-nsc-briefing-en.pdf"
   },

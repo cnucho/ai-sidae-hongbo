@@ -12,6 +12,7 @@ const { Presentation, PresentationFile } = await import(
 );
 
 const candidates = path.join(outDir, "screenshot-candidates");
+const designerCandidates = path.join(outDir, "questionnaire-designer-candidates");
 const slidesDir = path.join(workDir, "briefing-slides");
 await mkdir(slidesDir, { recursive: true });
 const sourceCommit = "3bc7f25";
@@ -39,7 +40,9 @@ function addText(slide, value, position, style = {}) {
 }
 
 async function addScreenshot(slide, file, alt, position = { left: 660, top: 205, width: 1160, height: 680 }) {
-  const bytes = await readFile(path.join(candidates, file));
+  const sourceDir = file.startsWith("designer:") ? designerCandidates : candidates;
+  const sourceFile = file.replace(/^designer:/, "");
+  const bytes = await readFile(path.join(sourceDir, sourceFile));
   shape(slide, "roundRect",
     { left: position.left - 12, top: position.top - 12, width: position.width + 24, height: position.height + 24 },
     colors.white, colors.line, 18);
@@ -126,39 +129,55 @@ const slideSpecs = [
     ["A project has an authoritative identity and objective", "Membership determines which projects a person can see", "Role and membership work together; ownership does not bypass duties"],
     "07-project-access.png", "Project access screen with active memberships",
     "The survey manager creates the controlled workspace and assigns staff before production begins."],
-  ["Questionnaire", "04", "Designers enter survey content while the server creates trusted identity",
-    ["Operators edit questions, types, labels, and options", "Artifact ID, version, producer, and hash are server-controlled", "Submission creates a reviewable questionnaire artifact"],
-    "09-questionnaire-input.png", "Questionnaire authoring form",
-    "Questionnaire design remains familiar, but trusted evidence is not typed by the operator."],
-  ["Independent review", "05", "A different reviewer approves the exact questionnaire version",
+  ["Questionnaire authoring", "04", "Questionnaires can be entered directly at scale",
+    ["Spreadsheet input supports rapid work across many questions", "The selected-question editor exposes wording, response type, choices, and metadata", "English, Kyrgyz, and Russian labels remain part of one design"],
+    "designer:01-author-sheet.png", "Spreadsheet-style questionnaire input",
+    "This is the survey-production workspace: staff can enter and edit the actual questionnaire, not only approve it."],
+  ["Import and reuse", "05", "Existing surveys and standard modules do not need to be rebuilt",
+    ["Import Word, Excel, XLSForm, CSV, TSV, QSF, JSON, Markdown, or project packages", "Survey Bank stores reusable questionnaires", "The KG household library provides common questions, code lists, and rule templates"],
+    "designer:09-survey-bank.png", "Survey Bank with import and reusable survey controls",
+    "Teams can begin from an existing survey, a standard module, or a validated external file."],
+  ["Conditions and routing", "06", "Response conditions are configured as readable rules",
+    ["Choose the condition effect, source question, operator, value, and target", "Build Show-if, skip, and required-if rules without writing code", "The generated condition remains inspectable before it is applied"],
+    "designer:06-condition-card.png", "Readable response-condition card",
+    "Complex questionnaires can express who sees each question and where the interview proceeds next."],
+  ["Flow review", "07", "The complete questionnaire flow can be inspected before fieldwork",
+    ["Question order and branches appear in one flow map", "Applied and pending routes remain distinguishable", "Reviewers can inspect logic without reading a spreadsheet formula"],
+    "designer:07-flow-map.png", "Questionnaire flow map with branches",
+    "Routing is visible and reviewable before the collection package is prepared."],
+  ["Governed submission", "08", "The completed questionnaire enters the controlled workflow",
+    ["The designer submits domain content through the operator workflow", "Artifact ID, version, producer, and hash are server-controlled", "Submission creates a reviewable questionnaire artifact"],
+    "09-questionnaire-input.png", "Questionnaire submission form in the controlled workflow",
+    "Authoring and governance are connected: trusted identity is created when the questionnaire is submitted."],
+  ["Independent review", "09", "A different reviewer approves the exact questionnaire version",
     ["The decision is bound to one artifact identity and SHA-256", "The reviewer records an explicit audit reason", "The accepted receipt advances the workflow revision"],
     "14-questionnaire-approval-receipt.png", "Accepted questionnaire approval receipt",
     "Approval cannot silently transfer to a later questionnaire version."],
-  ["Field preparation", "06", "Collection is prepared from approved questionnaire evidence",
+  ["Field preparation", "10", "Collection is prepared from approved questionnaire evidence",
     ["Mode, field dates, and device profile are explicit", "The collection package is versioned and traceable", "Offline work begins only from the accepted package"],
     "15-collection-input.png", "Prepare collection form",
     "The system connects questionnaire approval to practical field preparation."],
-  ["Collection and synchronization", "07", "Offline responses return through an accepted server batch",
+  ["Collection and synchronization", "11", "Offline responses return through an accepted server batch",
     ["Field identity and batch ownership are checked", "Received, accepted, duplicate, and rejected counts come from server evidence", "Respondent rows are not exposed in the publication workflow"],
     "20-synchronization-receipt.png", "Response synchronization receipt and active evidence",
     "This is the controlled boundary between field capture and statistical production."],
-  ["Cleaning review", "08", "Cleaning decisions remain linked to synchronized responses",
+  ["Cleaning review", "12", "Cleaning decisions remain linked to synchronized responses",
     ["Cleaning methods and quality flags are recorded", "A separate reviewer accepts or rejects the cleaned result", "Historical evidence remains available when later work is superseded"],
     "23-cleaning-receipt.png", "Accepted cleaning review receipt",
     "The system records not only a clean dataset, but also who reviewed it and why."],
-  ["Analysis", "09", "Analysts produce publishable indicators and tables from approved data",
+  ["Analysis", "13", "Analysts produce publishable indicators and tables from approved data",
     ["Report metadata, locale, template, and version are explicit", "Indicators contain units, precision, and uncertainty", "The report package preserves upstream lineage"],
     "24-analysis-input.png", "Analysis and report production form",
     "Operators work with aggregate statistical results rather than raw respondent records."],
-  ["Independent verification", "10", "Verification is a distinct, reproducible decision",
+  ["Independent verification", "14", "Verification is a distinct, reproducible decision",
     ["PASSED, FAILED, and INCOMPLETE remain explicit outcomes", "Methods, tables, cells, discrepancies, and report hash are recorded", "The report producer cannot verify their own output"],
     "29-verification-receipt.png", "Independent verification receipt",
     "Only PASSED verification bound to the exact report can continue."],
-  ["Publication governance", "11", "Publication approval is separate from technical verification",
+  ["Publication governance", "15", "Publication approval is separate from technical verification",
     ["The approver reviews the verified report", "The decision is bound to the same active report evidence", "Publisher authority cannot manufacture missing approval"],
     "32-publication-approval-receipt.png", "Publication approval receipt",
     "Governance remains visible: verification, approval, and release are different authorities."],
-  ["Official outputs", "12", "One immutable release delivers every official format",
+  ["Official outputs", "16", "One immutable release delivers every official format",
     ["Standalone HTML and publication-quality PDF", "Formatted XLSX plus table and cell-lineage CSV", "Every file has persisted identity, size, MIME type, and SHA-256"],
     "37-release-inventory.png", "Immutable release inventory with HTML PDF CSV and XLSX",
     "The audience can see real downloadable publication files—not a JSON promise or screen-only report."]
@@ -173,7 +192,7 @@ for (const [section, number, titleText, bullets, image, alt, takeaway] of slideS
 }
 
 const learning = deck.slides.add();
-addChrome(learning, "Ease of use", "13", "Help is available where the operator needs it—without cluttering the screen",
+addChrome(learning, "Ease of use", "17", "Help is available where the operator needs it—without cluttering the screen",
   "Operators can learn the system in context, while the normal workspace stays focused.");
 addBullets(learning, [
   "Screen and action guidance opens only after pressing Help",
@@ -184,7 +203,7 @@ await addScreenshot(learning, "08-support-survey-guide.png", "In-application ten
 addNotes(learning, "The Help area is an internal manual organized by the real survey sequence. Contextual help is hidden until requested.", "08-support-survey-guide.png");
 
 const service = deck.slides.add();
-addChrome(service, "Maintenance", "14", "Operations are supported as a service, not left to each survey team",
+addChrome(service, "Maintenance", "18", "Operations are supported as a service, not left to each survey team",
   "The operating model combines an in-application manual, controlled updates, and remote SaaS support.");
 const serviceItems = [
   ["MANUAL", "In-application guidance now; illustrated downloadable manuals can use the same verified content."],

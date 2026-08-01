@@ -25,13 +25,14 @@ const audioDir = path.join(outRoot, "audio");
 const narrationDir = path.join(outRoot, "narration");
 const subtitleDir = path.join(outRoot, "subtitles");
 const sampleDir = path.join(outRoot, "samples");
+const evidenceDir = path.join(outRoot, "evidence");
 const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
 if (!chapters.length) {
   throw new Error(`Unknown chapter: ${requested}. Available: ${manifest.chapters.map((item) => item.id).join(", ")}`);
 }
 
-for (const dir of [outRoot, rawDir, audioDir, narrationDir, subtitleDir, sampleDir]) {
+for (const dir of [outRoot, rawDir, audioDir, narrationDir, subtitleDir, sampleDir, evidenceDir]) {
   await mkdir(dir, { recursive: true });
 }
 
@@ -86,8 +87,8 @@ async function writeAss(chapter, audioDuration, target) {
     "Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text",
   ];
   beats.forEach((beat, index) => {
-    const start = index * beatDuration;
-    const end = Math.min(audioDuration, (index + 1) * beatDuration);
+    const start = beat.startSec ?? index * beatDuration;
+    const end = Math.min(audioDuration, beat.endSec ?? (beat.startSec != null ? start + (beat.durationSec ?? 24) : (index + 1) * beatDuration));
     const subtitle = beat.subtitleKo || beat.label;
     lines.push(`Dialogue: 0,${assTime(start)},${assTime(end)},Tutorial,,0,0,0,,${escapeAss(chapter.title)}  ·  ${escapeAss(subtitle)}`);
   });
@@ -159,6 +160,10 @@ async function performAction(page, action) {
   else if (action.type === "select") await locator.selectOption(action.value);
   else if (action.type === "check") await locator.setChecked(action.checked !== false);
   else if (action.type === "focus") await locator.click({ timeout: 8000 });
+  else if (action.type === "download") {
+    const [download] = await Promise.all([page.waitForEvent("download"), locator.click({ timeout: 8000 })]);
+    action.downloadName = download.suggestedFilename();
+  }
   else {
     if (box) await page.evaluate(([x, y]) => window.__tutorialClick?.(x, y), [box.x + box.width / 2, box.y + box.height / 2]);
     await locator.click({ timeout: 8000 });
@@ -166,6 +171,15 @@ async function performAction(page, action) {
   if (action.expectSelector) {
     await page.locator(action.expectSelector).first().waitFor({ state: "visible", timeout: 10000 });
   }
+  if (action.expectValue != null) {
+    const actual = await locator.inputValue();
+    if (actual !== action.expectValue) throw new Error(`Expected value ${action.expectValue}, received ${actual}`);
+  }
+  if (action.expectText) {
+    const actual = await page.locator(action.expectText.selector).first().textContent();
+    if (!String(actual).includes(action.expectText.includes)) throw new Error(`Expected ${action.expectText.selector} to include ${action.expectText.includes}`);
+  }
+  if (action.expectUrl) await page.waitForURL(action.expectUrl, { timeout: 10000 });
   await page.waitForTimeout(action.holdMs ?? 2200);
 }
 
@@ -200,6 +214,7 @@ async function recordChapter(chapter) {
   });
   await context.addInitScript(cursorInit);
   const page = await context.newPage();
+  const rawRecordingStartedAt = Date.now();
   const url = new URL(chapter.path, manifest.baseUrl).toString();
   console.log(`[${chapter.id}] Recording ${url}`);
   await page.goto(url, { waitUntil: "networkidle", timeout: 45000 });
@@ -209,11 +224,22 @@ async function recordChapter(chapter) {
     await page.waitForTimeout(900);
   }
   for (const label of chapter.setupClicks ?? []) await clickText(page, label);
-  for (const action of chapter.actions ?? []) await performAction(page, action);
 
+  const trimSeconds = (Date.now() - rawRecordingStartedAt) / 1000;
   const start = Date.now();
   let beatIndex = 0;
+  let actionIndex = 0;
+  const timedActions = [...(chapter.actions ?? [])].sort((a, b) => (a.atSec ?? 0) - (b.atSec ?? 0));
+  await page.screenshot({ path: path.join(evidenceDir, `${chapter.id}-00-start.png`) });
   while ((Date.now() - start) / 1000 < audioDuration) {
+    const elapsed = (Date.now() - start) / 1000;
+    const action = timedActions[actionIndex];
+    if (action && elapsed >= (action.atSec ?? 0)) {
+      await performAction(page, action);
+      actionIndex += 1;
+      await page.screenshot({ path: path.join(evidenceDir, `${chapter.id}-${String(actionIndex).padStart(2, "0")}-${action.id || action.type}.png`) });
+      continue;
+    }
     await focusBeat(page, chapter.beats[beatIndex % chapter.beats.length]);
     beatIndex += 1;
     if (beatIndex % chapter.beats.length === 0) {
@@ -221,16 +247,18 @@ async function recordChapter(chapter) {
       await page.waitForTimeout(900);
     }
   }
+  if (actionIndex !== timedActions.length) throw new Error(`Only ${actionIndex}/${timedActions.length} timed actions were executed.`);
+  await page.screenshot({ path: path.join(evidenceDir, `${chapter.id}-99-final.png`) });
 
   const video = page.video();
   await context.close();
   await browser.close();
   const rawPath = await video.path();
-  const videoDuration = durationOf(rawPath);
+  const videoDuration = Math.max(0, durationOf(rawPath) - trimSeconds);
   const pad = Math.max(0, audioDuration - videoDuration + 0.5);
   const assFilterPath = subtitlePath.replaceAll("\\", "/").replace(":", "\\:").replaceAll("'", "\\'");
   run("ffmpeg", [
-    "-y", "-loglevel", "error", "-i", rawPath, "-i", audioPath,
+    "-y", "-loglevel", "error", "-ss", trimSeconds.toFixed(3), "-i", rawPath, "-i", audioPath,
     "-filter_complex", `[0:v]tpad=stop_mode=clone:stop_duration=${pad.toFixed(2)},ass='${assFilterPath}',fps=30,format=yuv420p[v]`,
     "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-preset", "medium", "-crf", "20",
     "-c:a", "aac", "-b:a", "192k", "-shortest", finalPath,

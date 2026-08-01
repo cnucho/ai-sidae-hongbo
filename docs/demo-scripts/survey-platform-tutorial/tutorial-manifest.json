@@ -1,13 +1,13 @@
 {
   "seriesId": "survey-platform-tutorial-ko",
-  "title": "설문조사 플랫폼 실전 튜토리얼",
+  "title": "설문조사 플랫폼 총론 — 전체 업무 흐름 개관",
   "language": "ko-KR",
   "baseUrl": "https://survey-workflow-orchestrator-production.up.railway.app",
   "chapters": [
     {
       "id": "01-question-authoring",
       "title": "1. 설문 입력",
-      "path": "/apps/question-input-workbench/index.html",
+      "path": "/apps/question-input-workbench/index.html?tutorial=household-health",
       "narration": "첫 번째 단계는 설문 입력입니다. 이 화면은 질문을 한 줄씩 만드는 편집기이면서, 표준 질문 라이브러리와 조사 템플릿을 조합하는 작업 공간입니다. 먼저 라이브러리에서 가구 식별, 지역, 가구원 로스터 같은 항목을 찾을 수 있습니다. IVOLFS 분류에는 식별, 교육, 노동, 주거, 식품일지와 표준 분류 항목도 준비되어 있습니다. 처음부터 만들 때는 템플릿을 불러온 뒤 변수 아이디, 질문 유형, 필수 여부, 선택지, 숫자 범위와 다국어 라벨을 확인합니다. 로스터나 매트릭스 질문은 반복 행과 열의 의미를 확인하고, 분기 조건은 원인이 되는 질문과 이동 대상을 함께 점검해야 합니다. 화면 위쪽의 질문 수, 섹션 수, 오류 수는 현재 완성도를 보여 줍니다. 몇 문항이 안정되면 저장하고, 검토 단계로 넘길 초안 파일을 내보냅니다. 중요한 점은 여기서 곧바로 배포하지 않는다는 것입니다. 질문 작성 결과는 반드시 다음 검토 단계의 입력으로 넘깁니다.",
       "beats": [
         { "label": "Question Input Workbench", "subtitleKo": "표준 질문을 설문지로 구성합니다", "holdMs": 2200 },

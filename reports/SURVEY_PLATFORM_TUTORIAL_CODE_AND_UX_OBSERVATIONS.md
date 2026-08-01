@@ -77,3 +77,8 @@ The separate Codex review task `Survey 튜토리얼 독립 검토` checked the l
 3. The overview recorder moves among labels but does not demonstrate the actual user actions required for a hands-on course.
 
 The first blocker was fixed in Survey Workflow Orchestrator commit `183bcb7`: the production root now serves a six-app tutorial hub with direct links, safety guidance, and an explicit independent-sample statement. The detailed course uses a separate action-driven recorder and curriculum; it does not reuse the overview recorder as proof of hands-on training.
+
+### Production pipeline findings from the first hands-on lesson
+
+- Google TTS rejected the long six-minute Korean script because a single synthesis request exceeded 5,000 bytes. `synthesize-speech.mjs` now splits long scripts at sentence boundaries, synthesizes each chunk with the same Google voice, and concatenates the WAV parts before duration normalization.
+- The Question Input tutorial overlay intercepted the recorder's first real click. The hands-on recorder now leaves the overlay visible during orientation, removes it before automated practice actions, and fails loudly if an action target is missing or blocked.

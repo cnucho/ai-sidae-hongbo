@@ -13,11 +13,13 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const { chromium } = require(path.join(root, "node_modules", "playwright"));
-const manifestPath = path.join(root, "docs", "demo-scripts", "survey-platform-tutorial", "tutorial-manifest.json");
+const manifestPath = process.env.TUTORIAL_MANIFEST
+  ? path.resolve(root, process.env.TUTORIAL_MANIFEST)
+  : path.join(root, "docs", "demo-scripts", "survey-platform-tutorial", "tutorial-manifest.json");
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const requested = process.argv[2] ?? "all";
 const chapters = requested === "all" ? manifest.chapters : manifest.chapters.filter((item) => item.id === requested);
-const outRoot = path.join(root, "out", "survey-platform-tutorial");
+const outRoot = path.resolve(root, process.env.TUTORIAL_OUT_DIR || "out/survey-platform-tutorial");
 const rawDir = path.join(outRoot, "raw");
 const audioDir = path.join(outRoot, "audio");
 const narrationDir = path.join(outRoot, "narration");
@@ -141,9 +143,35 @@ async function focusBeat(page, beat) {
   await page.waitForTimeout(beat.holdMs ?? 1800);
 }
 
+async function performAction(page, action) {
+  const locator = action.selector
+    ? page.locator(action.selector).first()
+    : page.getByText(action.label, { exact: action.exact ?? false }).first();
+  if (action.type === "pause") {
+    await page.waitForTimeout(action.holdMs ?? 2500);
+    return;
+  }
+  if (!(await locator.count())) throw new Error(`Action target not found: ${action.selector || action.label}`);
+  await locator.scrollIntoViewIfNeeded().catch(() => {});
+  const box = await locator.boundingBox();
+  if (box) await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 24 });
+  if (action.type === "fill") await locator.fill(action.value);
+  else if (action.type === "select") await locator.selectOption(action.value);
+  else if (action.type === "check") await locator.setChecked(action.checked !== false);
+  else if (action.type === "focus") await locator.click({ timeout: 8000 });
+  else {
+    if (box) await page.evaluate(([x, y]) => window.__tutorialClick?.(x, y), [box.x + box.width / 2, box.y + box.height / 2]);
+    await locator.click({ timeout: 8000 });
+  }
+  if (action.expectSelector) {
+    await page.locator(action.expectSelector).first().waitFor({ state: "visible", timeout: 10000 });
+  }
+  await page.waitForTimeout(action.holdMs ?? 2200);
+}
+
 async function recordChapter(chapter) {
   const narrationPath = path.join(narrationDir, `${chapter.id}.txt`);
-  const audioPath = path.join(audioDir, `${chapter.id}.wav`);
+  let audioPath = path.join(audioDir, `${chapter.id}.wav`);
   const subtitlePath = path.join(subtitleDir, `${chapter.id}.ass`);
   const finalPath = path.join(outRoot, `${chapter.id}.mp4`);
   const samplePath = path.join(sampleDir, `${chapter.id}.png`);
@@ -151,6 +179,14 @@ async function recordChapter(chapter) {
 
   console.log(`\n[${chapter.id}] Synthesizing Korean narration...`);
   run("node", [path.join(root, "scripts", "synthesize-speech.mjs"), "--input", narrationPath, "--output", audioPath]);
+  if (chapter.targetDurationSec) {
+    const sourceDuration = durationOf(audioPath);
+    const speed = sourceDuration / chapter.targetDurationSec;
+    if (speed < 0.5 || speed > 2) throw new Error(`Narration duration ${sourceDuration}s cannot be safely normalized to ${chapter.targetDurationSec}s`);
+    const normalizedPath = path.join(audioDir, `${chapter.id}-normalized.wav`);
+    run("ffmpeg", ["-y", "-loglevel", "error", "-i", audioPath, "-filter:a", `atempo=${speed.toFixed(6)}`, normalizedPath]);
+    audioPath = normalizedPath;
+  }
   const audioDuration = durationOf(audioPath);
   await writeAss(chapter, audioDuration, subtitlePath);
 
@@ -168,7 +204,12 @@ async function recordChapter(chapter) {
   console.log(`[${chapter.id}] Recording ${url}`);
   await page.goto(url, { waitUntil: "networkidle", timeout: 45000 });
   await page.waitForTimeout(2200);
+  if (chapter.actions?.length) {
+    await page.evaluate(() => document.querySelector("#kg-tutorial-overlay")?.remove());
+    await page.waitForTimeout(900);
+  }
   for (const label of chapter.setupClicks ?? []) await clickText(page, label);
+  for (const action of chapter.actions ?? []) await performAction(page, action);
 
   const start = Date.now();
   let beatIndex = 0;

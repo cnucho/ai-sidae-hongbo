@@ -67,3 +67,13 @@ This file records defects and improvement opportunities observed while producing
 ## Detailed-course production rule
 
 Each independent lesson must be follow-along training rather than passive narration. Every lesson therefore needs: prerequisites, a safe tutorial fixture, exact user actions, pause-and-try checkpoints, a visible success criterion, and a reset/retry path. Any product defect that prevents those steps must be fixed and deployed before that lesson is recorded.
+
+## Independent review gate
+
+The separate Codex review task `Survey 튜토리얼 독립 검토` checked the live production workbenches and found three production blockers for follow-along lessons:
+
+1. The production root URL was a respondent-token error page rather than a course entry point.
+2. App samples use different projects and variables, so they must be taught as independent exercises rather than a single continuous sample.
+3. The overview recorder moves among labels but does not demonstrate the actual user actions required for a hands-on course.
+
+The first blocker was fixed in Survey Workflow Orchestrator commit `183bcb7`: the production root now serves a six-app tutorial hub with direct links, safety guidance, and an explicit independent-sample statement. The detailed course uses a separate action-driven recorder and curriculum; it does not reuse the overview recorder as proof of hands-on training.

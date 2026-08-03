@@ -246,12 +246,62 @@ function splitGoogleText(text, maxBytes = 4500) {
   return chunks;
 }
 
+function prepareGoogleText(text, language) {
+  const normalized = text
+    .normalize("NFC")
+    .replace(/[\u200B-\u200D\uFEFF]/gu, "")
+    .replace(/[ \t]+/gu, " ")
+    .replace(/ *\r?\n */gu, "\n")
+    .trim();
+
+  if (language !== "ko") return normalized;
+
+  return normalized
+    .split(/\n+/u)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => /[.!?。！？]$/u.test(line) ? line : `${line}.`)
+    .join("\n");
+}
+
+function splitPreparedGoogleText(text, maxBytes = 4500) {
+  const sentences = text
+    .split(/(?<=[.!?。！？])\s+|\n+/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+  const chunks = [];
+  let current = "";
+  for (const sentence of sentences) {
+    const candidate = current ? `${current} ${sentence}` : sentence;
+    if (Buffer.byteLength(candidate, "utf8") <= maxBytes) {
+      current = candidate;
+      continue;
+    }
+    if (current) chunks.push(current);
+    if (Buffer.byteLength(sentence, "utf8") > maxBytes) {
+      let fragment = "";
+      for (const char of sentence) {
+        if (Buffer.byteLength(fragment + char, "utf8") > maxBytes) {
+          chunks.push(fragment);
+          fragment = char;
+        } else fragment += char;
+      }
+      current = fragment;
+    } else current = sentence;
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
 async function runGoogleSpeech(text, language) {
   const token = await googleAccessToken();
   const languageCode = googleLanguageCode(language);
   const endpoint =
     process.env.GOOGLE_TTS_ENDPOINT ?? "https://texttospeech.googleapis.com/v1/text:synthesize";
-  const chunks = splitGoogleText(text);
+  const preparedText = prepareGoogleText(text, language);
+  const chunks = language === "ko"
+    ? splitPreparedGoogleText(preparedText)
+    : splitGoogleText(preparedText);
   const partPaths = [];
   for (let index = 0; index < chunks.length; index += 1) {
     const response = await fetch(endpoint, {

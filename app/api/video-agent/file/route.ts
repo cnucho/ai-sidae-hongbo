@@ -1,14 +1,19 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { NextResponse } from "next/server";
+import { downloadQueuedVideo } from "@/lib/video-jobs";
+import { NextResponse, type NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
 const videoPath = path.join(process.cwd(), "out", "pr-studio-final.mp4");
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const [file, metadata] = await Promise.all([readFile(videoPath), stat(videoPath)]);
+    const jobId = request.nextUrl.searchParams.get("jobId");
+    const queued = jobId ? await downloadQueuedVideo(jobId) : null;
+    const [file, metadata] = queued
+      ? [queued.bytes, { size: queued.size, mtimeMs: Date.parse(queued.generatedAt) }]
+      : await Promise.all([readFile(videoPath), stat(videoPath)]);
 
     return new Response(new Uint8Array(file), {
       headers: {

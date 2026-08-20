@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { runVideoAgent } from "@/lib/video-agent";
+import { createVideoAgentPlan, runVideoAgent } from "@/lib/video-agent";
+import { createVideoJob, shouldQueueVideoJobs } from "@/lib/video-jobs";
 
 export const runtime = "nodejs";
 export const maxDuration = 600;
@@ -15,10 +16,23 @@ export async function POST(request: NextRequest) {
       body.brief?.trim() ||
       "PR Studio가 앱 안에서 YouTube 홍보 데모 영상을 직접 생성하는 흐름을 보여 주세요.";
     const appUrl = request.headers.get("origin") ?? request.nextUrl.origin;
+
+    if (shouldQueueVideoJobs()) {
+      const plan = await createVideoAgentPlan(brief);
+      const job = await createVideoJob({ brief, appUrl, plan });
+
+      return NextResponse.json({
+        ok: true,
+        queued: true,
+        job,
+      });
+    }
+
     const output = await runVideoAgent({ brief, appUrl });
 
     return NextResponse.json({
       ok: true,
+      queued: false,
       output,
     });
   } catch (error) {
